@@ -1,0 +1,20 @@
+include README.md
+include LICENSE
+include requirements.txt
+include pyproject.toml
+recursive-include cli *.py
+recursive-include core *.py
+recursive-include db *.py *.sql
+recursive-include binaries *.exe
+recursive-include ffmpeg/bin *.exe
+exclude tests/*
+exclude *.bat
+exclude *.ps1
+exclude install_ffmpeg.py
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *.pyd
+global-exclude __pycache__
+global-exclude .DS_Store
+global-exclude *.log
+global-exclude *.tmp

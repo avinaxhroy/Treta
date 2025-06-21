@@ -1,0 +1,79 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "treta"
+version = "1.0.0"
+description = "A comprehensive music downloader supporting Spotify, Apple Music, and YouTube Music"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Treta Team"}
+]
+keywords = ["music", "download", "spotify", "apple-music", "youtube-music"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+    "requests>=2.25.0",
+    "mutagen>=1.45.0",
+    "yt-dlp>=2023.1.0",
+    "spotipy>=2.22.0",
+    "cryptography>=3.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov>=4.0",
+    "black>=22.0",
+    "flake8>=4.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/treta-team/treta"
+Repository = "https://github.com/treta-team/treta"
+Issues = "https://github.com/treta-team/treta/issues"
+
+[project.scripts]
+treta = "treta:main"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --strict-markers"
+testpaths = [
+    "tests",
+]
+python_files = [
+    "test_*.py",
+    "*_test.py",
+]
+python_classes = [
+    "Test*",
+]
+python_functions = [
+    "test_*",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["treta*", "cli*", "core*", "db*"]
+exclude = ["tests*"]

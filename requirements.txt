@@ -1,0 +1,32 @@
+# Treta Music Downloader Dependencies
+
+# Core framework
+typer[all]>=0.9.0
+rich>=13.0.0
+
+# Audio processing and analysis
+librosa>=0.10.0
+scikit-learn>=1.3.0
+joblib>=1.3.0
+
+# Metadata handling
+mutagen>=1.47.0
+
+# Security and encryption
+cryptography>=41.0.0
+
+# Data visualization
+matplotlib>=3.7.0
+
+# HTTP requests
+requests>=2.31.0
+
+# Music downloaders
+gamdl>=2.4.0
+git+https://github.com/DraftKinner/zotify.git
+yt-dlp>=2023.12.30
+
+# Additional audio libraries (optional but recommended)
+soundfile>=0.12.0  # For librosa audio loading
+numba>=0.57.0     # For librosa performance
+resampy>=0.4.0    # For librosa resampling
