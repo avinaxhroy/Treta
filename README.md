@@ -4,21 +4,34 @@
 
 ![Treta Logo](https://img.shields.io/badge/🎵-Treta-blue?style=for-the-badge)
 
-[![Release](https://img.shields.io/github/v/release/treta-team/treta?style=flat-square)](https://github.com/treta-team/treta/releases)
+[![Release](https://img.shields.io/github/v/release/avinaxhroy/treta?style=flat-square)](https://github.com/avinaxhroy/treta/releases)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue?style=flat-square)](https://python.org)
-[![License](https://img.shields.io/github/license/treta-team/treta?style=flat-square)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/treta-team/treta?style=flat-square)](https://github.com/treta-team/treta/stargazers)
-[![Downloads](https://img.shields.io/github/downloads/treta-team/treta/total?style=flat-square)](https://github.com/treta-team/treta/releases)
+[![License](https://img.shields.io/github/license/avinaxhroy/treta?style=flat-square)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/avinaxhroy/treta?style=flat-square)](https://github.com/avinaxhroy/treta/stargazers)
+[![Downloads](https://img.shields.io/github/downloads/avinaxhroy/treta/total?style=flat-square)](https://github.com/avinaxhroy/treta/releases)
 
 **🚀 The Ultimate Multi-Platform Music Downloader | 🎯 Zero Configuration Required | 🎶 Premium Quality Audio**
 
 *A feature-rich, AI-powered music downloader supporting Spotify, Apple Music, and YouTube Music with intelligent mood detection, smart playlists, and completely automated setup.*
 
-[🚀 **Auto-Install Now**](#-one-click-installation--setup) • [📖 **Documentation**](#-complete-command-reference) • [💬 **Community**](https://discord.gg/treta) • [🐛 **Issues**](https://github.com/treta-team/treta/issues)
+[🚀 **Auto-Install Now**](#-one-click-installation--setup) • [📖 **Documentation**](#-complete-command-reference) • [💬 **Community (Comming Soon)**]() • [🐛 **Issues**](https://github.com/avinaxhroy/treta/issues)
 
 </div>
 
 ---
+
+## ⚖️ Disclaimer
+
+Treta Music Downloader is intended for **educational and personal use only**. Users must ensure compliance with the terms of service of the platforms they access and respect all applicable copyright laws. The software does not circumvent DRM protections and requires valid subscriptions or accounts for premium services. 
+
+**Key Points:**
+- ✅ This project is only made for education purpose.
+- ✅ Use downloads for personal, non-commercial purposes only.
+- ✅ Ensure you have the legal right to access and download content.
+- ✅ The developers are not responsible for misuse of this software.
+
+By using Treta, you agree to take full responsibility for adhering to local laws and regulations regarding music downloads and intellectual property rights.
+
 
 ## ⚡ One-Click Installation & Setup
 
@@ -28,7 +41,7 @@ Simply run our auto-installer that handles **EVERYTHING** for you:
 
 ```powershell
 # Download and run the auto-installer
-powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/treta-team/treta/main/install.ps1 | iex"
+powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/avinaxhroy/treta/main/install.ps1 | iex"
 ```
 
 **What the auto-installer does:**
@@ -44,7 +57,7 @@ powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.c
 
 ```bash
 # Download and run the auto-installer
-curl -fsSL https://raw.githubusercontent.com/treta-team/treta/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/avinaxhroy/treta/main/install.sh | bash
 ```
 
 ### 📦 Manual Installation (If needed)
@@ -54,7 +67,7 @@ curl -fsSL https://raw.githubusercontent.com/treta-team/treta/main/install.sh | 
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/treta-team/treta.git
+git clone https://github.com/avinaxhroy/treta.git
 cd treta
 
 # 2. Run the local auto-installer
@@ -475,7 +488,7 @@ treta import itunes-library --file "iTunes Music Library.xml"
 
 ```bash
 # Clone repository
-git clone https://github.com/treta-team/treta.git
+git clone https://github.com/avinaxhroy/treta.git
 cd treta
 
 # Setup development environment
@@ -563,7 +576,7 @@ pytest tests/performance/ --benchmark
 ## 🙏 Acknowledgments & Credits
 
 ### 🎵 **Core Technologies**
-- **[Zotify](https://github.com/zotify-dev/zotify)** - Spotify downloading engine
+- **[Zotify](https://github.com/DraftKinner/zotify)** - Spotify downloading engine
 - **[GAMDL](https://github.com/glomatico/gamdl)** - Apple Music downloading functionality
 - **[yt-dlp](https://github.com/yt-dlp/yt-dlp)** - YouTube downloading capabilities
 - **[librosa](https://librosa.org)** - Audio analysis and processing
@@ -585,7 +598,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ## 🎵 Start Your Musical Journey Today!
 
-### [⬇️ Download Treta](https://github.com/treta-team/treta/releases/latest) | [📖 Documentation](https://docs.treta.app) | [💬 Community](https://discord.gg/treta) | [🐛 Report Issues](https://github.com/treta-team/treta/issues)
+### [⬇️ Download Treta](https://github.com/avinaxhroy/treta/releases/latest) | [📖 Documentation](https://docs.treta.app) | [💬 Community(Comming soon)]() | [🐛 Report Issues](https://github.com/avinaxhroy/treta/issues)
 
 **Made with ❤️ by music lovers, for music lovers**
 
