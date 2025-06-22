@@ -14,7 +14,7 @@
 
 *A feature-rich, AI-powered music downloader supporting Spotify, Apple Music, and YouTube Music with intelligent mood detection, smart playlists, and completely automated setup.*
 
-[🚀 **Auto-Install Now**](#-one-click-installation--setup) • [📖 **Documentation**](#-complete-command-reference) • [💬 **Community (Comming Soon)**]() • [🐛 **Issues**](https://github.com/avinaxhroy/treta/issues)
+[🚀 **Auto-Install Now**](#-one-click-installation--setup) • [📖 **Documentation**](#-complete-command-reference) • [💬 **Community (Coming Soon)**]() • [🐛 **Issues**](https://github.com/avinaxhroy/treta/issues)
 
 </div>
 
@@ -582,7 +582,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ## 🎵 Start Your Musical Journey Today!
 
-### [⬇️ Download Treta](https://github.com/avinaxhroy/treta/releases/latest) | [📖 Documentation](https://docs.treta.app) | [💬 Community(Comming soon)]() | [🐛 Report Issues](https://github.com/avinaxhroy/treta/issues)
+### [⬇️ Download Treta](https://github.com/avinaxhroy/treta/releases/latest) | [📖 Documentation](https://docs.treta.app) | [💬 Community(Coming soon)]() | [🐛 Report Issues](https://github.com/avinaxhroy/treta/issues)
 
 **Made with ❤️ by music lovers, for music lovers**
 
