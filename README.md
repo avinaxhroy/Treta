@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Treta Logo](https://img.shields.io/badge/🎵-Treta-blue?style=for-the-badge)
+![Treta Logo](http://avinas.me/wp-content/uploads/2025/06/TRETA.png)
 
 [![Release](https://img.shields.io/github/v/release/avinaxhroy/treta?style=flat-square)](https://github.com/avinaxhroy/treta/releases)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue?style=flat-square)](https://python.org)
