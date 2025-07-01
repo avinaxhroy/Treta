@@ -1,7 +1,12 @@
 # Treta Music Downloader Dependencies
+# 
+# IMPORTANT: Requires Python 3.11 or greater (as required by zotify)
+# DraftKinner's zotify fork is actively maintained and should work with Python 3.12+
+# 
+# This uses the stable v1.0.1 release of DraftKinner's zotify
 
 # Core framework
-typer[all]>=0.9.0
+typer>=0.9.0
 rich>=13.0.0
 
 # Audio processing and analysis
@@ -23,7 +28,8 @@ requests>=2.31.0
 
 # Music downloaders
 gamdl>=2.4.0
-git+https://github.com/DraftKinner/zotify.git
+# Zotify (Spotify downloader) - using stable v1.0.1 from DraftKinner's fork
+git+https://github.com/DraftKinner/zotify.git@v1.0.1
 yt-dlp>=2023.12.30
 
 # Additional audio libraries (optional but recommended)

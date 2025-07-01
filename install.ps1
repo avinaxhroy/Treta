@@ -77,7 +77,12 @@ function Test-PythonInstallation {
             $version = & $cmd --version 2>$null
             if ($version -match "Python 3\.(\d+)\.") {
                 $minorVersion = [int]$matches[1]
-                if ($minorVersion -ge 8) {
+                # Zotify requires Python 3.11 or greater
+                if ($minorVersion -ge 11) {
+                    return $cmd
+                } elseif ($minorVersion -ge 8) {
+                    Write-Warning "Found Python 3.$minorVersion, but zotify requires Python 3.11+"
+                    Write-Info "Some features may not work correctly with older Python versions"
                     return $cmd
                 }
             }
@@ -91,42 +96,47 @@ function Test-PythonInstallation {
 }
 
 function Install-Python {
-    Write-Step "Python 3.8+ not found. Attempting to install..."
+    Write-Step "Python 3.11+ not found. Installing Python 3.11 for optimal compatibility..."
     
     # Try winget first
     try {
-        $wingetResult = winget install Python.Python.3.11 --silent --accept-package-agreements --accept-source-agreements
+        Write-Info "Attempting installation via winget..."
+        $wingetResult = winget install Python.Python.3.11 --silent --accept-package-agreements --accept-source-agreements 2>$null
         if ($LASTEXITCODE -eq 0) {
-            Write-Success "Python installed via winget"
+            Write-Success "Python 3.11 installed via winget"
             # Refresh PATH
             $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
+            Start-Sleep -Seconds 2  # Wait for PATH to refresh
             return Test-PythonInstallation
         }
     }
     catch {
-        Write-Warning "winget installation failed, trying alternative method..."
+        Write-Warning "winget installation failed, trying direct download..."
     }
     
-    # Fallback: Direct download
-    Write-Info "Downloading Python installer..."
+    # Fallback: Direct download of Python 3.11
+    Write-Info "Downloading Python 3.11 installer..."
     $pythonUrl = "https://www.python.org/ftp/python/3.11.8/python-3.11.8-amd64.exe"
     $tempFile = [System.IO.Path]::GetTempFileName() + ".exe"
     
     try {
+        Write-Info "Downloading installer (this may take a moment)..."
         Invoke-WebRequest -Uri $pythonUrl -OutFile $tempFile -UseBasicParsing
-        Write-Info "Installing Python (this may take a few minutes)..."
-        Start-Process -FilePath $tempFile -ArgumentList "/quiet", "InstallAllUsers=1", "PrependPath=1" -Wait
-        Remove-Item $tempFile
+        Write-Info "Installing Python 3.11 (this may take a few minutes)..."
+        Start-Process -FilePath $tempFile -ArgumentList "/quiet", "InstallAllUsers=0", "PrependPath=1", "Include_test=0" -Wait
+        Remove-Item $tempFile -ErrorAction SilentlyContinue
         
         # Refresh PATH
         $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
+        Start-Sleep -Seconds 3  # Wait for installation to complete
         
         return Test-PythonInstallation
     }
     catch {
         Write-Error "Failed to download or install Python: $($_.Exception.Message)"
-        Write-Info "Please download and install Python manually from: https://python.org/downloads/"
-        Write-Info "Make sure to check 'Add Python to PATH' during installation"
+        Write-Info "Please manually install Python 3.11+ from: https://www.python.org/downloads/"
+        Write-Info "Important: Make sure to check 'Add Python to PATH' during installation"
+        Write-Info "Note: Zotify requires Python 3.11 or greater for full functionality"
         return $null
     }
 }
@@ -217,8 +227,11 @@ function Main {
             Write-Host ""
             Write-Info "You can now use Treta with: .\treta.bat"
             Write-Info "Or run 'treta.bat guide' for a complete walkthrough"
+            Write-Info "Test your installation with: python test_installation.py"
         } else {
             Write-Error "Installation failed. Please check the error messages above."
+            Write-Info "For troubleshooting help, see: TROUBLESHOOTING.md"
+            Write-Info "Or run: python test_installation.py to diagnose issues"
             return 1
         }
     }

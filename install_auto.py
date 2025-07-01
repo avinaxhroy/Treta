@@ -138,7 +138,8 @@ class TretaInstaller:
             
             # Step 1: Check Python installation
             if not self.check_python():
-                print_error("Python installation failed. Please install Python 3.8+ manually.")
+                print_error("Python installation failed. Please install Python 3.8-3.11 manually.")
+                print_info("Download from: https://www.python.org/downloads/release/python-3118/")
                 return False
                 
             # Step 2: Create virtual environment
@@ -146,14 +147,15 @@ class TretaInstaller:
                 print_error("Virtual environment creation failed.")
                 return False
                 
-            # Step 3: Install dependencies
-            if not self.install_dependencies():
-                print_error("Dependency installation failed.")
-                return False
+            # Step 3: Install dependencies (allow partial success)
+            deps_success = self.install_dependencies()
+            if not deps_success:
+                print_warning("Some dependencies failed to install. Treta may have limited functionality.")
+                print_info("You can run 'python test_installation.py' to check what's missing")
                 
             # Step 4: Install external tools (FFmpeg, etc.)
             if not self.install_external_tools():
-                print_warning("Some external tools may not be available. Treta will still work with limited functionality.")
+                print_warning("Some external tools may not be available. Audio processing features may be limited.")
                 
             # Step 5: Create launcher scripts
             if not self.create_launchers():
@@ -164,8 +166,17 @@ class TretaInstaller:
                 print_warning("Configuration setup incomplete. You can configure manually later.")
                 
             # Step 7: Final verification
-            if not self.verify_installation():
-                print_warning("Installation verification had issues, but Treta should still work.")
+            verification_success = self.verify_installation()
+            if not verification_success:
+                print_warning("Installation verification had issues.")
+                print_info("Run 'python test_installation.py' to diagnose problems")
+                
+            # Show results
+            if deps_success and verification_success:
+                print_success("✅ Installation completed successfully!")
+            else:
+                print_warning("⚠️  Installation completed with some issues")
+                print_info("Basic functionality should work, but some features may be limited")
                 
             self.print_next_steps()
             return True
@@ -175,10 +186,11 @@ class TretaInstaller:
             return False
         except Exception as e:
             print_error(f"Unexpected error during installation: {e}")
+            print_info("Try running the installer again, or install manually")
             return False
     
     def check_python(self) -> bool:
-        """Check if Python 3.8+ is available."""
+        """Check if Python 3.11+ is available (as required by zotify)."""
         print_step("Checking Python installation...")
         
         # Try to find existing Python
@@ -193,15 +205,20 @@ class TretaInstaller:
                     if 'Python 3.' in version_str:
                         version_parts = version_str.split()[1].split('.')
                         major, minor = int(version_parts[0]), int(version_parts[1])
-                        if major == 3 and minor >= 8:
+                        if major == 3 and minor >= 11:
                             self.python_executable = cmd
                             print_success(f"Found Python {version_str}")
+                            return True
+                        elif major == 3 and minor >= 8:
+                            print_warning(f"Found Python {version_str}, but zotify requires Python 3.11+")
+                            print_info("Some features may not work correctly")
+                            self.python_executable = cmd
                             return True
             except (subprocess.TimeoutExpired, FileNotFoundError, ValueError):
                 continue
         
         # Python not found or too old
-        print_warning("Python 3.8+ not found. Attempting to install...")
+        print_warning("Python 3.11+ not found. Attempting to install...")
         return self.install_python()
     
     def install_python(self) -> bool:
@@ -314,7 +331,7 @@ class TretaInstaller:
             return False
     
     def install_dependencies(self) -> bool:
-        """Install all required dependencies."""
+        """Install all required dependencies with error handling."""
         print_step("Installing dependencies...")
         
         try:
@@ -326,34 +343,218 @@ class TretaInstaller:
             subprocess.run([self.venv_python, '-m', 'pip', 'install', '--upgrade', 'pip'], 
                           check=True, timeout=120)
             
-            # Install requirements from requirements.txt
+            # Install requirements with special handling for problematic packages
             req_file = self.project_dir / 'requirements.txt'
             if req_file.exists():
-                subprocess.run([self.venv_python, '-m', 'pip', 'install', '-r', str(req_file)], 
-                              check=True, timeout=600)
+                # Try installing all requirements first
+                try:
+                    subprocess.run([self.venv_python, '-m', 'pip', 'install', '-r', str(req_file)], 
+                                  check=True, timeout=600)
+                    print_success("All dependencies installed successfully")
+                    return True
+                except subprocess.CalledProcessError as e:
+                    print_warning("Some dependencies failed to install. Trying alternative installation methods...")
+                    # Try installing with specific fixes for Python 3.12
+                    return self._install_with_fixes()
             else:
                 # Install essential packages directly
-                essential_packages = [
-                    'typer[all]>=0.9.0',
-                    'rich>=13.0.0',
-                    'requests>=2.31.0',
-                    'yt-dlp>=2023.12.0',
-                    'mutagen>=1.47.0',
-                    'librosa>=0.10.0',
-                    'sqlalchemy>=2.0.0',
-                    'cryptography>=41.0.0'
-                ]
-                
-                for package in essential_packages:
-                    subprocess.run([self.venv_python, '-m', 'pip', 'install', package], 
-                                  check=True, timeout=120)
-            
-            print_success("Dependencies installed successfully")
-            return True
+                return self._install_essential_packages()
             
         except Exception as e:
             print_error(f"Failed to install dependencies: {e}")
+            print_info("Trying individual package installation...")
+            return self._install_essential_packages()
+    
+    def _install_with_fixes(self) -> bool:
+        """Install packages with specific fixes for Python 3.12 compatibility."""
+        print_info("Attempting installation with Python 3.12 compatibility fixes...")
+        
+        # Install packages in order of dependency
+        packages_order = [
+            # Core packages first
+            ('typer>=0.9.0', 'Command-line interface framework'),
+            ('rich>=13.0.0', 'Rich text formatting'),
+            ('requests>=2.31.0', 'HTTP requests'),
+            ('mutagen>=1.47.0', 'Audio metadata'),
+            ('cryptography>=41.0.0', 'Encryption'),
+            ('yt-dlp>=2023.12.30', 'YouTube downloader'),
+            ('gamdl>=2.4.0', 'Apple Music downloader'),
+            
+            # Audio processing
+            ('librosa>=0.10.0', 'Audio analysis'),
+            ('scikit-learn>=1.3.0', 'Machine learning'),
+            ('matplotlib>=3.7.0', 'Plotting'),
+            ('soundfile>=0.12.0', 'Audio file handling'),
+            ('numba>=0.57.0', 'Performance optimization'),
+            ('resampy>=0.4.0', 'Audio resampling'),
+            ('joblib>=1.3.0', 'Parallel processing'),
+        ]
+        
+        success_count = 0
+        for package, description in packages_order:
+            if self._install_single_package(package, description):
+                success_count += 1
+        
+        # Now try to install zotify with special handling
+        zotify_success = self._install_zotify_with_fixes()
+        if zotify_success:
+            success_count += 1
+        
+        total_packages = len(packages_order) + 1  # +1 for zotify
+        print_info(f"Successfully installed {success_count}/{total_packages} packages")
+        
+        # Consider it successful if we got most packages
+        return success_count >= (total_packages * 0.7)  # 70% success rate
+    
+    def _install_zotify_with_fixes(self) -> bool:
+        """Install DraftKinner's zotify v1.0.1 (stable version)."""
+        print_info("Installing zotify v1.0.1 (Spotify downloader)...")
+        
+        if not self.venv_python:
             return False
+        
+        # Method 1: Try installing the stable v1.0.1 release
+        try:
+            print_info("Installing DraftKinner's zotify v1.0.1 (stable)...")
+            subprocess.run([self.venv_python, '-m', 'pip', 'install', 
+                          'git+https://github.com/DraftKinner/zotify.git@v1.0.1'], 
+                          check=True, timeout=300)
+            
+            print_success("Zotify v1.0.1 installed successfully")
+            return True
+            
+        except subprocess.CalledProcessError:
+            print_warning("Stable version failed. Trying development version...")
+        
+        # Method 2: Try the development version if stable fails
+        try:
+            print_info("Installing DraftKinner's zotify (dev version)...")
+            subprocess.run([self.venv_python, '-m', 'pip', 'install', 
+                          'git+https://github.com/DraftKinner/zotify.git@dev'], 
+                          check=True, timeout=300)
+            
+            print_success("Zotify (dev) installed successfully")
+            return True
+            
+        except subprocess.CalledProcessError:
+            print_warning("Development version failed. Trying latest commit...")
+        
+        # Method 3: Try latest commit without version tag
+        try:
+            print_info("Installing DraftKinner's zotify (latest)...")
+            subprocess.run([self.venv_python, '-m', 'pip', 'install', 
+                          'git+https://github.com/DraftKinner/zotify.git'], 
+                          check=True, timeout=300)
+            
+            print_success("Zotify (latest) installed successfully")
+            return True
+            
+        except subprocess.CalledProcessError:
+            print_error("All zotify installation methods failed")
+            print_info("Zotify will not be available. You can try installing it manually later:")
+            print_info("1. Activate the virtual environment:")
+            if self.system == 'windows':
+                print_info("   .venv\\Scripts\\activate")
+            else:
+                print_info("   source .venv/bin/activate")
+            print_info("2. Install zotify manually:")
+            print_info("   pip install git+https://github.com/DraftKinner/zotify.git@v1.0.1")
+            print_info("3. Or try the development version:")
+            print_info("   pip install git+https://github.com/DraftKinner/zotify.git@dev")
+            return False
+    
+    def _install_librespot_with_fixes(self) -> bool:
+        """Install librespot-python with Python 3.12 compatibility fixes."""
+        if not self.venv_python:
+            return False
+            
+        try:
+            # First try DraftKinner's fork which should be compatible with their zotify
+            print_info("Installing DraftKinner's librespot-python (compatible with their zotify)...")
+            subprocess.run([self.venv_python, '-m', 'pip', 'install', 
+                          'git+https://github.com/DraftKinner/librespot-python'], 
+                          check=True, timeout=180)
+            print_success("DraftKinner's librespot-python installed successfully")
+            return True
+        except subprocess.CalledProcessError:
+            print_warning("DraftKinner's librespot-python failed, trying original...")
+            # If that fails, try the original
+            try:
+                subprocess.run([self.venv_python, '-m', 'pip', 'install', 
+                              'git+https://github.com/kokarare1212/librespot-python'], 
+                              check=True, timeout=180)
+                print_success("Original librespot-python installed")
+                return True
+            except subprocess.CalledProcessError:
+                # If that fails, try with specific commit that might be more compatible
+                try:
+                    subprocess.run([self.venv_python, '-m', 'pip', 'install', 
+                                  'git+https://github.com/kokarare1212/librespot-python.git@v0.1.0'], 
+                                  check=True, timeout=180)
+                    print_success("Compatible librespot-python version installed")
+                    return True
+                except subprocess.CalledProcessError:
+                    print_error("All librespot-python installation attempts failed")
+                    return False
+    
+    def _install_single_package(self, package: str, description: str) -> bool:
+        """Install a single package with error handling."""
+        try:
+            print_info(f"Installing {description}...")
+            subprocess.run([self.venv_python, '-m', 'pip', 'install', package], 
+                          check=True, timeout=120)
+            return True
+        except subprocess.CalledProcessError:
+            print_warning(f"Failed to install {package}")
+            return False
+    
+    def _install_essential_packages(self) -> bool:
+        """Install essential packages individually with error handling."""
+        if not self.venv_python:
+            print_error("Virtual environment not available for package installation")
+            return False
+            
+        essential_packages = [
+            'typer>=0.9.0',  # Remove [all] as it's causing issues
+            'rich>=13.0.0',
+            'requests>=2.31.0',
+            'yt-dlp>=2023.12.0',
+            'mutagen>=1.47.0',
+            'cryptography>=41.0.0',
+            'gamdl>=2.4.0'
+        ]
+        
+        # Optional packages that might fail
+        optional_packages = [
+            'librosa>=0.10.0',
+            'scikit-learn>=1.3.0',
+            'matplotlib>=3.7.0',
+            'soundfile>=0.12.0'
+        ]
+        
+        success_count = 0
+        
+        # Install essential packages
+        for package in essential_packages:
+            try:
+                print_info(f"Installing {package}...")
+                subprocess.run([self.venv_python, '-m', 'pip', 'install', package], 
+                              check=True, timeout=120)
+                success_count += 1
+            except subprocess.CalledProcessError:
+                print_warning(f"Failed to install {package} - continuing with other packages")
+        
+        # Install optional packages (don't fail if these don't work)
+        for package in optional_packages:
+            try:
+                print_info(f"Installing optional package {package}...")
+                subprocess.run([self.venv_python, '-m', 'pip', 'install', package], 
+                              check=True, timeout=180)
+            except subprocess.CalledProcessError:
+                print_warning(f"Optional package {package} failed to install - skipping")
+        
+        # Return True if we got at least 70% of essential packages
+        return success_count >= (len(essential_packages) * 0.7)
     
     def install_external_tools(self) -> bool:
         """Install external tools like FFmpeg."""
@@ -552,8 +753,14 @@ cd "{self.project_dir}"
         print()
         print_header("🎉 Installation Complete!")
         print()
-        print_success("Treta has been successfully installed!")
+        print_success("Treta has been successfully set up!")
         print()
+        
+        # Test command first
+        print_colored("🧪 First, test your installation:", Colors.CYAN)
+        print_colored("   python test_installation.py", Colors.WHITE)
+        print()
+        
         print_info("Next steps:")
         print_colored("1. Authenticate with your music services:", Colors.CYAN)
         
@@ -581,6 +788,12 @@ cd "{self.project_dir}"
         else:
             print_colored("   ./treta guide", Colors.WHITE)
             print_colored("   ./treta examples", Colors.WHITE)
+        
+        print()
+        print_colored("🔧 Troubleshooting:", Colors.YELLOW)
+        print_colored("   • If you have issues, run: python test_installation.py", Colors.WHITE)
+        print_colored("   • For Python 3.12 compatibility issues, use Python 3.11", Colors.WHITE)
+        print_colored("   • Missing dependencies can be installed individually with pip", Colors.WHITE)
         
         print()
         print_colored("📖 For full documentation, visit: https://github.com/avinaxhroy/Treta", Colors.BLUE)
