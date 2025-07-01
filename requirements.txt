@@ -28,9 +28,8 @@ requests>=2.31.0
 
 # Music downloaders
 gamdl>=2.4.0
-# Zotify dependencies - install librespot-python first to avoid conflicts
-git+https://github.com/DraftKinner/librespot-python
 # Zotify (Spotify downloader) - using stable v1.0.1 from DraftKinner's fork
+# Note: librespot-python dependency conflicts are handled by the installer
 git+https://github.com/DraftKinner/zotify.git@v1.0.1
 yt-dlp>=2023.12.30
 

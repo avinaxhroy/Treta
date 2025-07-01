@@ -43,7 +43,7 @@ def get_python_executable():
     return sys.executable
 
 def fix_zotify_installation():
-    """Fix zotify installation with Python 3.12 compatibility."""
+    """Fix zotify installation with dependency conflict resolution."""
     print_colored("🔧 Zotify Installation Fix Script", "95")  # Magenta
     print_colored("=" * 40, "95")
     print()
@@ -67,37 +67,44 @@ def fix_zotify_installation():
     packages_to_remove = ['librespot', 'zotify']
     for package in packages_to_remove:
         try:
-            subprocess.run([python_exe, '-m', 'pip', 'uninstall', '-y', package], 
+            result = subprocess.run([python_exe, '-m', 'pip', 'uninstall', '-y', package], 
                           capture_output=True, timeout=60)
+            if result.returncode == 0:
+                print_info(f"Removed existing {package}")
         except:
             pass  # Ignore errors if package isn't installed
     
-    # Step 2: Install DraftKinner's librespot-python
-    print_step("Installing DraftKinner's librespot-python...")
-    try:
-        result = subprocess.run([
-            python_exe, '-m', 'pip', 'install', 
-            'git+https://github.com/DraftKinner/librespot-python'
-        ], check=True, timeout=300, capture_output=True, text=True)
-        print_success("DraftKinner's librespot-python installed successfully")
-    except subprocess.CalledProcessError as e:
-        print_warning("DraftKinner's version failed, trying alternative...")
-        try:
-            # Try a specific commit that might work
-            subprocess.run([
-                python_exe, '-m', 'pip', 'install', 
-                'git+https://github.com/kokarare1212/librespot-python.git@6f88a73b59baaeb3c6e1e8c87cd1b9b57b42b8e0'
-            ], check=True, timeout=300, capture_output=True, text=True)
-            print_success("Alternative librespot-python installed")
-        except subprocess.CalledProcessError:
-            print_error("Failed to install compatible librespot-python")
-            return False
+    # Step 2: Install zotify WITHOUT dependencies first
+    print_step("Installing zotify without dependencies...")
+    zotify_versions = [
+        ('v1.0.1 (stable)', 'git+https://github.com/DraftKinner/zotify.git@v1.0.1'),
+        ('dev version', 'git+https://github.com/DraftKinner/zotify.git@dev'),
+        ('latest', 'git+https://github.com/DraftKinner/zotify.git')
+    ]
     
-    # Step 3: Install zotify dependencies manually
+    zotify_installed = False
+    for version_name, version_url in zotify_versions:
+        try:
+            print_info(f"Trying {version_name}...")
+            subprocess.run([
+                python_exe, '-m', 'pip', 'install', '--no-deps', version_url
+            ], check=True, timeout=180, capture_output=True, text=True)
+            print_success(f"Zotify {version_name} installed successfully")
+            zotify_installed = True
+            break
+        except subprocess.CalledProcessError as e:
+            print_warning(f"Failed to install {version_name}")
+            continue
+    
+    if not zotify_installed:
+        print_error("Failed to install any version of zotify")
+        return False
+    
+    # Step 3: Install zotify dependencies (excluding librespot)
     print_step("Installing zotify dependencies...")
     zotify_deps = [
         'requests>=2.25.0',
-        'Pillow>=8.0.0',
+        'Pillow>=8.0.0', 
         'protobuf>=3.17.0',
         'tabulate>=0.8.0',
         'tqdm>=4.0.0',
@@ -105,45 +112,63 @@ def fix_zotify_installation():
         'music-tag>=0.4.3'
     ]
     
+    deps_success = 0
     for dep in zotify_deps:
         try:
             subprocess.run([python_exe, '-m', 'pip', 'install', dep], 
                           check=True, timeout=60, capture_output=True)
-            print_info(f"Installed {dep}")
+            print_info(f"✓ {dep}")
+            deps_success += 1
         except subprocess.CalledProcessError:
-            print_warning(f"Failed to install {dep}")
+            print_warning(f"✗ Failed to install {dep}")
     
-    # Step 4: Install zotify without dependencies
-    print_step("Installing zotify without dependencies...")
-    zotify_versions = [
-        'git+https://github.com/DraftKinner/zotify.git@v1.0.1',
-        'git+https://github.com/DraftKinner/zotify.git@dev',
-        'git+https://github.com/DraftKinner/zotify.git'
+    print_info(f"Installed {deps_success}/{len(zotify_deps)} dependencies")
+    
+    # Step 4: Install compatible librespot (try multiple approaches)
+    print_step("Installing compatible librespot-python...")
+    librespot_options = [
+        ('DraftKinner\'s fork', 'git+https://github.com/DraftKinner/librespot-python'),
+        ('Standard package', 'librespot'),
+        ('Specific commit', 'git+https://github.com/kokarare1212/librespot-python.git@6f88a73b59baaeb3c6e1e8c87cd1b9b57b42b8e0')
     ]
     
-    for version in zotify_versions:
+    librespot_installed = False
+    for name, package in librespot_options:
         try:
-            subprocess.run([
-                python_exe, '-m', 'pip', 'install', '--no-deps', version
-            ], check=True, timeout=180, capture_output=True, text=True)
-            print_success(f"Zotify installed successfully: {version}")
+            print_info(f"Trying {name}...")
+            subprocess.run([python_exe, '-m', 'pip', 'install', package], 
+                          check=True, timeout=240, capture_output=True, text=True)
+            print_success(f"Librespot installed: {name}")
+            librespot_installed = True
             break
         except subprocess.CalledProcessError:
-            print_warning(f"Failed to install {version}")
+            print_warning(f"Failed: {name}")
             continue
-    else:
-        print_error("All zotify installation attempts failed")
-        return False
+    
+    if not librespot_installed:
+        print_warning("Could not install librespot - zotify may have limited functionality")
+        print_info("You can try installing Python 3.11 for better compatibility")
     
     # Step 5: Test the installation
     print_step("Testing zotify installation...")
     try:
         result = subprocess.run([python_exe, '-c', 'import zotify; print("Zotify import successful")'], 
                               check=True, timeout=10, capture_output=True, text=True)
-        print_success("Zotify can be imported successfully!")
+        print_success("✅ Zotify can be imported successfully!")
+        
+        # Try to test librespot too
+        try:
+            subprocess.run([python_exe, '-c', 'import librespot; print("Librespot available")'], 
+                          check=True, timeout=5, capture_output=True, text=True)
+            print_success("✅ Librespot is also working!")
+        except:
+            print_warning("⚠️  Librespot may not be working, but basic zotify should function")
+        
         return True
+        
     except subprocess.CalledProcessError:
-        print_warning("Zotify installed but import test failed - it may still work")
+        print_warning("⚠️  Zotify installed but import test failed - it may still work")
+        print_info("Try running: python -c \"import zotify; print('OK')\" to test manually")
         return True
 
 def main():

@@ -331,7 +331,7 @@ class TretaInstaller:
             return False
     
     def install_dependencies(self) -> bool:
-        """Install all required dependencies with error handling."""
+        """Install all required dependencies with special handling for zotify."""
         print_step("Installing dependencies...")
         
         try:
@@ -343,27 +343,60 @@ class TretaInstaller:
             subprocess.run([self.venv_python, '-m', 'pip', 'install', '--upgrade', 'pip'], 
                           check=True, timeout=120)
             
-            # Install requirements with special handling for problematic packages
+            # Install requirements with special zotify handling
             req_file = self.project_dir / 'requirements.txt'
             if req_file.exists():
-                # Try installing all requirements first
-                try:
-                    subprocess.run([self.venv_python, '-m', 'pip', 'install', '-r', str(req_file)], 
-                                  check=True, timeout=600)
-                    print_success("All dependencies installed successfully")
-                    return True
-                except subprocess.CalledProcessError as e:
-                    print_warning("Some dependencies failed to install. Trying alternative installation methods...")
-                    # Try installing with specific fixes for Python 3.12
-                    return self._install_with_fixes()
+                # Create a temporary requirements file without zotify
+                temp_req_content = []
+                zotify_line = None
+                
+                with open(req_file, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        line = line.strip()
+                        if 'zotify' in line.lower() and line.startswith('git+'):
+                            zotify_line = line
+                            print_info(f"Skipping zotify for separate installation: {line}")
+                            continue
+                        elif line and not line.startswith('#'):
+                            temp_req_content.append(line)
+                
+                # Install non-zotify requirements first
+                if temp_req_content:
+                    temp_req_file = self.project_dir / 'temp_requirements.txt'
+                    try:
+                        with open(temp_req_file, 'w', encoding='utf-8') as f:
+                            f.write('\n'.join(temp_req_content))
+                        
+                        print_info("Installing core dependencies (excluding zotify)...")
+                        subprocess.run([self.venv_python, '-m', 'pip', 'install', '-r', str(temp_req_file)], 
+                                      check=True, timeout=600)
+                        print_success("Core dependencies installed successfully")
+                        
+                        # Clean up temp file
+                        temp_req_file.unlink()
+                        
+                    except Exception as e:
+                        print_warning(f"Core dependencies installation had issues: {e}")
+                        if temp_req_file.exists():
+                            temp_req_file.unlink()
+                        # Try individual installation as fallback
+                        return self._install_with_fixes()
+                
+                # Now handle zotify separately
+                zotify_success = True
+                if zotify_line:
+                    zotify_success = self._install_zotify_with_fixes()
+                
+                return zotify_success  # Return overall success
+                
             else:
                 # Install essential packages directly
-                return self._install_essential_packages()
+                return self._install_with_fixes()
             
         except Exception as e:
             print_error(f"Failed to install dependencies: {e}")
             print_info("Trying individual package installation...")
-            return self._install_essential_packages()
+            return self._install_with_fixes()
     
     def _install_with_fixes(self) -> bool:
         """Install packages with specific fixes for Python 3.12 compatibility."""
@@ -407,26 +440,34 @@ class TretaInstaller:
         return success_count >= (total_packages * 0.7)  # 70% success rate
     
     def _install_zotify_with_fixes(self) -> bool:
-        """Install DraftKinner's zotify with dependency management to avoid Python 3.12 issues."""
-        print_info("Installing zotify with Python 3.12 compatibility fixes...")
+        """Install DraftKinner's zotify with careful dependency management."""
+        print_info("Installing zotify with dependency conflict resolution...")
         
         if not self.venv_python:
             return False
         
-        # Method 1: Install DraftKinner's librespot-python first, then zotify without deps
+        # Method 1: Try installing zotify directly (might work if pip resolves dependencies correctly)
         try:
-            print_info("Installing DraftKinner's librespot-python (Python 3.12 compatible)...")
+            print_info("Attempting direct zotify installation...")
             subprocess.run([self.venv_python, '-m', 'pip', 'install', 
-                          'git+https://github.com/DraftKinner/librespot-python'], 
+                          'git+https://github.com/DraftKinner/zotify.git@v1.0.1'], 
                           check=True, timeout=300)
             
-            print_info("Installing zotify v1.0.1 without dependencies...")
+            print_success("Zotify v1.0.1 installed successfully (direct method)")
+            return True
+            
+        except subprocess.CalledProcessError:
+            print_warning("Direct installation failed due to dependency conflicts. Trying manual resolution...")
+        
+        # Method 2: Install without dependencies and handle manually
+        try:
+            print_info("Installing zotify without dependencies...")
             subprocess.run([self.venv_python, '-m', 'pip', 'install', '--no-deps',
                           'git+https://github.com/DraftKinner/zotify.git@v1.0.1'], 
                           check=True, timeout=180)
             
-            # Install other zotify dependencies manually
-            print_info("Installing zotify's other dependencies...")
+            # Install zotify's dependencies manually (excluding librespot)
+            print_info("Installing zotify dependencies manually...")
             zotify_deps = [
                 'requests>=2.25.0',
                 'Pillow>=8.0.0',
@@ -441,65 +482,68 @@ class TretaInstaller:
                 try:
                     subprocess.run([self.venv_python, '-m', 'pip', 'install', dep], 
                                   check=True, timeout=60)
+                    print_info(f"✓ {dep}")
                 except subprocess.CalledProcessError:
-                    print_warning(f"Failed to install {dep} - zotify may have limited functionality")
+                    print_warning(f"Failed to install {dep}")
             
-            print_success("Zotify v1.0.1 installed with compatibility fixes")
-            return True
+            # Now try to install a compatible librespot
+            print_info("Installing compatible librespot-python...")
+            librespot_success = False
+            
+            # Try DraftKinner's version first
+            try:
+                subprocess.run([self.venv_python, '-m', 'pip', 'install', 
+                              'git+https://github.com/DraftKinner/librespot-python'], 
+                              check=True, timeout=240)
+                print_success("DraftKinner's librespot-python installed")
+                librespot_success = True
+            except subprocess.CalledProcessError:
+                print_warning("DraftKinner's librespot failed, trying alternatives...")
+                
+                # Try installing just the librespot package without git dependencies
+                try:
+                    subprocess.run([self.venv_python, '-m', 'pip', 'install', 'librespot'], 
+                                  check=True, timeout=120)
+                    print_success("Standard librespot package installed")
+                    librespot_success = True
+                except subprocess.CalledProcessError:
+                    print_warning("Standard librespot failed too")
+            
+            if librespot_success:
+                print_success("Zotify installed with manual dependency resolution")
+                return True
+            else:
+                print_warning("Zotify installed but librespot may not work - limited functionality")
+                return True  # Still consider it a success as zotify is installed
             
         except subprocess.CalledProcessError:
-            print_warning("Method 1 failed. Trying alternative approach...")
+            print_warning("Manual installation failed. Trying development version...")
         
-        # Method 2: Try installing a Python 3.12 compatible librespot fork
+        # Method 3: Try development version
         try:
-            print_info("Trying alternative librespot-python installation...")
-            # Try uninstalling any existing librespot first
-            subprocess.run([self.venv_python, '-m', 'pip', 'uninstall', '-y', 'librespot'], 
-                          capture_output=True, timeout=60)
-            
-            # Install a potentially more compatible version
-            subprocess.run([self.venv_python, '-m', 'pip', 'install', 
-                          'git+https://github.com/kokarare1212/librespot-python.git@6f88a73b59baaeb3c6e1e8c87cd1b9b57b42b8e0'], 
-                          check=True, timeout=300)
-            
-            print_info("Installing zotify without dependencies...")
+            print_info("Trying zotify development version...")
             subprocess.run([self.venv_python, '-m', 'pip', 'install', '--no-deps',
-                          'git+https://github.com/DraftKinner/zotify.git@v1.0.1'], 
+                          'git+https://github.com/DraftKinner/zotify.git@dev'], 
                           check=True, timeout=180)
             
-            print_success("Zotify installed with alternative librespot version")
-            return True
-            
-        except subprocess.CalledProcessError:
-            print_warning("Method 2 failed. Trying development version...")
-        
-        # Method 3: Try the development version which might have fixes
-        try:
-            print_info("Installing zotify development version (may have Python 3.12 fixes)...")
-            subprocess.run([self.venv_python, '-m', 'pip', 'install', 
-                          'git+https://github.com/DraftKinner/zotify.git@dev'], 
-                          check=True, timeout=300)
-            
-            print_success("Zotify (dev) installed successfully")
+            print_success("Zotify (dev) installed - may have better compatibility")
             return True
             
         except subprocess.CalledProcessError:
             print_error("All zotify installation methods failed")
-            print_info("This is likely due to Python 3.12 compatibility issues with librespot-python")
             print_info("")
-            print_info("🔧 Manual installation options:")
-            print_info("1. Use Python 3.11 instead of 3.12:")
-            print_info("   - Download Python 3.11 from https://python.org/downloads/")
-            print_info("   - Create new venv: python3.11 -m venv .venv")
-            print_info("   - Run installer again")
+            print_info("🔧 To fix this manually, run the fix script:")
+            print_info("   python fix_zotify.py")
             print_info("")
-            print_info("2. Or try manual zotify installation:")
+            print_info("Or try these manual steps:")
             if self.system == 'windows':
                 print_info("   .venv\\Scripts\\activate")
             else:
                 print_info("   source .venv/bin/activate")
+            print_info("   pip uninstall -y librespot zotify")
             print_info("   pip install --no-deps git+https://github.com/DraftKinner/zotify.git@v1.0.1")
             print_info("   pip install requests Pillow protobuf tabulate tqdm pycryptodome music-tag")
+            print_info("   pip install git+https://github.com/DraftKinner/librespot-python")
             print_info("")
             print_info("Treta will work without zotify, but Spotify downloading won't be available.")
             return False
