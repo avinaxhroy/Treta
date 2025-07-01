@@ -5,7 +5,7 @@
 # It handles everything automatically: Python, dependencies, FFmpeg, setup.
 #
 # Usage:
-#   powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/treta-team/treta/main/install.ps1 | iex"
+#   powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/avinaxhroy/Treta/main/install.ps1 | iex"
 #   or
 #   .\install.ps1
 #
@@ -160,17 +160,17 @@ function Main {
         
         if ($gitAvailable) {
             Write-Info "Using git to clone repository..."
-            git clone https://github.com/treta-team/treta.git
-            Set-Location treta
+            git clone https://github.com/avinaxhroy/Treta.git
+            Set-Location Treta
         } else {
             Write-Info "Downloading repository as archive..."
-            $zipUrl = "https://github.com/treta-team/treta/archive/main.zip"
+            $zipUrl = "https://github.com/avinaxhroy/Treta/archive/main.zip"
             $zipFile = "treta.zip"
             
             Invoke-WebRequest -Uri $zipUrl -OutFile $zipFile -UseBasicParsing
             Expand-Archive -Path $zipFile -DestinationPath . -Force
             Remove-Item $zipFile
-            Set-Location treta-main
+            Set-Location Treta-main
         }
         
         # Check Python installation

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "treta"
-version = "1.0.0"
+version = "1.2.0"
 description = "A comprehensive music downloader supporting Spotify, Apple Music, and YouTube Music"
 readme = "README.md"
 license = {text = "MIT"}
@@ -45,9 +45,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/treta-team/treta"
-Repository = "https://github.com/treta-team/treta"
-Issues = "https://github.com/treta-team/treta/issues"
+Homepage = "https://github.com/avinaxhroy/Treta"
+Repository = "https://github.com/avinaxhroy/Treta"
+Issues = "https://github.com/avinaxhroy/Treta/issues"
 
 [project.scripts]
 treta = "treta:main"

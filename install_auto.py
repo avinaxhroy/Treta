@@ -60,7 +60,16 @@ def print_colored(text: str, color: str = Colors.WHITE, end: str = '\n'):
             kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
         except:
             pass
-    print(f"{color}{text}{Colors.RESET}", end=end)
+        # Handle Unicode encoding issues on Windows
+        try:
+            print(f"{color}{text}{Colors.RESET}", end=end)
+        except UnicodeEncodeError:
+            # Fallback: remove emoji characters for Windows compatibility
+            import re
+            text_no_emoji = re.sub(r'[^\x00-\x7F]+', '', text).strip()
+            print(f"{color}{text_no_emoji}{Colors.RESET}", end=end)
+    else:
+        print(f"{color}{text}{Colors.RESET}", end=end)
 
 def print_header(title: str):
     """Print a formatted header."""
@@ -554,8 +563,8 @@ cd "{self.project_dir}"
             print_colored("   ./treta examples", Colors.WHITE)
         
         print()
-        print_colored("📖 For full documentation, visit: https://github.com/treta-team/treta", Colors.BLUE)
-        print_colored("🐛 Report issues at: https://github.com/treta-team/treta/issues", Colors.BLUE)
+        print_colored("📖 For full documentation, visit: https://github.com/avinaxhroy/Treta", Colors.BLUE)
+        print_colored("🐛 Report issues at: https://github.com/avinaxhroy/Treta/issues", Colors.BLUE)
         print()
         print_colored("Happy downloading! 🎵", Colors.GREEN + Colors.BOLD)
 
