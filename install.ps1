@@ -230,7 +230,13 @@ function Main {
             Write-Info "Test your installation with: python test_installation.py"
         } else {
             Write-Error "Installation failed. Please check the error messages above."
-            Write-Info "For troubleshooting help, see: TROUBLESHOOTING.md"
+            Write-Host ""
+            Write-Info "If you got an 'imp' module error, try this fix:"
+            Write-Info "1. cd Treta"  
+            Write-Info "2. .\.venv\Scripts\activate"
+            Write-Info "3. python fix_zotify.py"
+            Write-Host ""
+            Write-Info "For more help, see: TROUBLESHOOTING.md"
             Write-Info "Or run: python test_installation.py to diagnose issues"
             return 1
         }

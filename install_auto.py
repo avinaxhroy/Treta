@@ -407,28 +407,75 @@ class TretaInstaller:
         return success_count >= (total_packages * 0.7)  # 70% success rate
     
     def _install_zotify_with_fixes(self) -> bool:
-        """Install DraftKinner's zotify v1.0.1 (stable version)."""
-        print_info("Installing zotify v1.0.1 (Spotify downloader)...")
+        """Install DraftKinner's zotify with dependency management to avoid Python 3.12 issues."""
+        print_info("Installing zotify with Python 3.12 compatibility fixes...")
         
         if not self.venv_python:
             return False
         
-        # Method 1: Try installing the stable v1.0.1 release
+        # Method 1: Install DraftKinner's librespot-python first, then zotify without deps
         try:
-            print_info("Installing DraftKinner's zotify v1.0.1 (stable)...")
+            print_info("Installing DraftKinner's librespot-python (Python 3.12 compatible)...")
             subprocess.run([self.venv_python, '-m', 'pip', 'install', 
-                          'git+https://github.com/DraftKinner/zotify.git@v1.0.1'], 
+                          'git+https://github.com/DraftKinner/librespot-python'], 
                           check=True, timeout=300)
             
-            print_success("Zotify v1.0.1 installed successfully")
+            print_info("Installing zotify v1.0.1 without dependencies...")
+            subprocess.run([self.venv_python, '-m', 'pip', 'install', '--no-deps',
+                          'git+https://github.com/DraftKinner/zotify.git@v1.0.1'], 
+                          check=True, timeout=180)
+            
+            # Install other zotify dependencies manually
+            print_info("Installing zotify's other dependencies...")
+            zotify_deps = [
+                'requests>=2.25.0',
+                'Pillow>=8.0.0',
+                'protobuf>=3.17.0',
+                'tabulate>=0.8.0',
+                'tqdm>=4.0.0',
+                'pycryptodome>=3.0.0',
+                'music-tag>=0.4.3'
+            ]
+            
+            for dep in zotify_deps:
+                try:
+                    subprocess.run([self.venv_python, '-m', 'pip', 'install', dep], 
+                                  check=True, timeout=60)
+                except subprocess.CalledProcessError:
+                    print_warning(f"Failed to install {dep} - zotify may have limited functionality")
+            
+            print_success("Zotify v1.0.1 installed with compatibility fixes")
             return True
             
         except subprocess.CalledProcessError:
-            print_warning("Stable version failed. Trying development version...")
+            print_warning("Method 1 failed. Trying alternative approach...")
         
-        # Method 2: Try the development version if stable fails
+        # Method 2: Try installing a Python 3.12 compatible librespot fork
         try:
-            print_info("Installing DraftKinner's zotify (dev version)...")
+            print_info("Trying alternative librespot-python installation...")
+            # Try uninstalling any existing librespot first
+            subprocess.run([self.venv_python, '-m', 'pip', 'uninstall', '-y', 'librespot'], 
+                          capture_output=True, timeout=60)
+            
+            # Install a potentially more compatible version
+            subprocess.run([self.venv_python, '-m', 'pip', 'install', 
+                          'git+https://github.com/kokarare1212/librespot-python.git@6f88a73b59baaeb3c6e1e8c87cd1b9b57b42b8e0'], 
+                          check=True, timeout=300)
+            
+            print_info("Installing zotify without dependencies...")
+            subprocess.run([self.venv_python, '-m', 'pip', 'install', '--no-deps',
+                          'git+https://github.com/DraftKinner/zotify.git@v1.0.1'], 
+                          check=True, timeout=180)
+            
+            print_success("Zotify installed with alternative librespot version")
+            return True
+            
+        except subprocess.CalledProcessError:
+            print_warning("Method 2 failed. Trying development version...")
+        
+        # Method 3: Try the development version which might have fixes
+        try:
+            print_info("Installing zotify development version (may have Python 3.12 fixes)...")
             subprocess.run([self.venv_python, '-m', 'pip', 'install', 
                           'git+https://github.com/DraftKinner/zotify.git@dev'], 
                           check=True, timeout=300)
@@ -437,30 +484,24 @@ class TretaInstaller:
             return True
             
         except subprocess.CalledProcessError:
-            print_warning("Development version failed. Trying latest commit...")
-        
-        # Method 3: Try latest commit without version tag
-        try:
-            print_info("Installing DraftKinner's zotify (latest)...")
-            subprocess.run([self.venv_python, '-m', 'pip', 'install', 
-                          'git+https://github.com/DraftKinner/zotify.git'], 
-                          check=True, timeout=300)
-            
-            print_success("Zotify (latest) installed successfully")
-            return True
-            
-        except subprocess.CalledProcessError:
             print_error("All zotify installation methods failed")
-            print_info("Zotify will not be available. You can try installing it manually later:")
-            print_info("1. Activate the virtual environment:")
+            print_info("This is likely due to Python 3.12 compatibility issues with librespot-python")
+            print_info("")
+            print_info("🔧 Manual installation options:")
+            print_info("1. Use Python 3.11 instead of 3.12:")
+            print_info("   - Download Python 3.11 from https://python.org/downloads/")
+            print_info("   - Create new venv: python3.11 -m venv .venv")
+            print_info("   - Run installer again")
+            print_info("")
+            print_info("2. Or try manual zotify installation:")
             if self.system == 'windows':
                 print_info("   .venv\\Scripts\\activate")
             else:
                 print_info("   source .venv/bin/activate")
-            print_info("2. Install zotify manually:")
-            print_info("   pip install git+https://github.com/DraftKinner/zotify.git@v1.0.1")
-            print_info("3. Or try the development version:")
-            print_info("   pip install git+https://github.com/DraftKinner/zotify.git@dev")
+            print_info("   pip install --no-deps git+https://github.com/DraftKinner/zotify.git@v1.0.1")
+            print_info("   pip install requests Pillow protobuf tabulate tqdm pycryptodome music-tag")
+            print_info("")
+            print_info("Treta will work without zotify, but Spotify downloading won't be available.")
             return False
     
     def _install_librespot_with_fixes(self) -> bool:

@@ -1,29 +1,15 @@
 # Treta Installation Troubleshooting Guide
 
-## Python Version Requirements
+## Python 3.12 `imp` Module Error
 
-**Important:** Zotify requires **Python 3.11 or greater**. If you encounter installation issues, this is likely the cause.
-
-### Quick Python Version Check
-
-```bash
-python --version
-# Should show Python 3.11.x or higher
+If you get this error:
+```
+ModuleNotFoundError: No module named 'imp'
 ```
 
-### Installing Python 3.11+
+This is a Python 3.12 compatibility issue with librespot-python. Here are the solutions:
 
-If you have an older Python version:
-
-1. **Download Python 3.11+** from [python.org](https://www.python.org/downloads/)
-2. **During installation:** Make sure to check "Add Python to PATH"
-3. **Verify installation:** `python --version`
-
-## Zotify Installation Issues
-
-### Quick Fix - Manual Zotify Installation
-
-If the auto-installer fails with zotify, try installing it manually:
+### Solution 1: Manual Compatible Installation (Recommended)
 
 ```bash
 # Activate your virtual environment first
@@ -32,11 +18,39 @@ If the auto-installer fails with zotify, try installing it manually:
 # On macOS/Linux:
 source .venv/bin/activate
 
-# Install stable version (recommended)
-pip install git+https://github.com/DraftKinner/zotify.git@v1.0.1
+# Install DraftKinner's librespot-python (more compatible)
+pip install git+https://github.com/DraftKinner/librespot-python
 
-# Or try development version if stable fails
-pip install git+https://github.com/DraftKinner/zotify.git@dev
+# Install zotify without dependencies to avoid conflicts
+pip install --no-deps git+https://github.com/DraftKinner/zotify.git@v1.0.1
+
+# Install zotify's other dependencies manually
+pip install requests Pillow protobuf tabulate tqdm pycryptodome music-tag
+```
+
+### Solution 2: Use Python 3.11 (Most Reliable)
+
+1. **Download Python 3.11** from [python.org](https://www.python.org/downloads/release/python-3118/)
+2. **Install it** (make sure to check "Add Python to PATH")
+3. **Create a new virtual environment:**
+   ```bash
+   python3.11 -m venv .venv
+   ```
+4. **Run the installer again**
+
+### Solution 3: Alternative librespot Installation
+
+Try installing a specific commit that doesn't have the `imp` issue:
+
+```bash
+# Remove existing librespot if installed
+pip uninstall -y librespot
+
+# Install compatible version
+pip install git+https://github.com/kokarare1212/librespot-python.git@6f88a73b59baaeb3c6e1e8c87cd1b9b57b42b8e0
+
+# Then install zotify without deps
+pip install --no-deps git+https://github.com/DraftKinner/zotify.git@v1.0.1
 ```
 
 ### Manual Installation Steps
