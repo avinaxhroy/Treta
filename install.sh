@@ -7,7 +7,7 @@
 # It handles everything automatically: Python, dependencies, FFmpeg, setup.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/treta-team/treta/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/avinaxhroy/treta/main/install.sh | bash
 #   or
 #   ./install.sh
 #
@@ -76,16 +76,16 @@ main() {
     if command -v git >/dev/null 2>&1; then
         # Clone with git
         print_info "Using git to clone repository..."
-        git clone https://github.com/treta-team/treta.git
+        git clone https://github.com/avinaxhroy/treta.git
         cd treta
     else
         # Download as zip
         print_info "Downloading repository as archive..."
         
         if command -v curl >/dev/null 2>&1; then
-            curl -L -o treta.zip https://github.com/treta-team/treta/archive/main.zip
+            curl -L -o treta.zip https://github.com/avinaxhroy/treta/archive/main.zip
         elif command -v wget >/dev/null 2>&1; then
-            wget -O treta.zip https://github.com/treta-team/treta/archive/main.zip
+            wget -O treta.zip https://github.com/avinaxhroy/treta/archive/main.zip
         else
             print_error "Neither curl nor wget found. Please install one of them or git."
             exit 1
