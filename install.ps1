@@ -13,6 +13,15 @@
 # Enable colors in PowerShell
 $Host.UI.RawUI.ForegroundColor = "White"
 
+# Set UTF-8 encoding for better Unicode support
+try {
+    $OutputEncoding = [System.Text.Encoding]::UTF8
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+    $Env:PYTHONIOENCODING = "utf-8"
+} catch {
+    # Ignore encoding setup errors
+}
+
 function Write-ColoredOutput {
     param(
         [string]$Message,
@@ -160,12 +169,23 @@ function Main {
         
         if ($gitAvailable) {
             Write-Info "Using git to clone repository..."
+            # Remove existing directory if it exists
+            if (Test-Path "Treta") {
+                Write-Warning "Removing existing Treta directory..."
+                Remove-Item "Treta" -Recurse -Force -ErrorAction SilentlyContinue
+            }
             git clone https://github.com/avinaxhroy/Treta.git
             Set-Location Treta
         } else {
             Write-Info "Downloading repository as archive..."
             $zipUrl = "https://github.com/avinaxhroy/Treta/archive/main.zip"
             $zipFile = "treta.zip"
+            
+            # Remove existing directory if it exists
+            if (Test-Path "Treta-main") {
+                Write-Warning "Removing existing Treta-main directory..."
+                Remove-Item "Treta-main" -Recurse -Force -ErrorAction SilentlyContinue
+            }
             
             Invoke-WebRequest -Uri $zipUrl -OutFile $zipFile -UseBasicParsing
             Expand-Archive -Path $zipFile -DestinationPath . -Force

@@ -60,14 +60,34 @@ def print_colored(text: str, color: str = Colors.WHITE, end: str = '\n'):
             kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
         except:
             pass
+        
         # Handle Unicode encoding issues on Windows
         try:
+            # Try to encode with the current console encoding
+            text.encode('cp1252')
             print(f"{color}{text}{Colors.RESET}", end=end)
-        except UnicodeEncodeError:
-            # Fallback: remove emoji characters for Windows compatibility
+        except (UnicodeEncodeError, LookupError):
+            # Fallback: remove emoji and non-ASCII characters for Windows compatibility
             import re
-            text_no_emoji = re.sub(r'[^\x00-\x7F]+', '', text).strip()
-            print(f"{color}{text_no_emoji}{Colors.RESET}", end=end)
+            # Remove emoji and other Unicode symbols
+            text_clean = re.sub(r'[^\x00-\x7F]+', '', text)
+            # Clean up extra spaces
+            text_clean = re.sub(r'\s+', ' ', text_clean).strip()
+            # Add fallback symbols
+            if '🎵' in text:
+                text_clean = f"[Music] {text_clean}"
+            elif '❌' in text:
+                text_clean = f"[Error] {text_clean}"
+            elif '✅' in text:
+                text_clean = f"[Success] {text_clean}"
+            elif '📋' in text:
+                text_clean = f"[Step] {text_clean}"
+            elif '⚠️' in text:
+                text_clean = f"[Warning] {text_clean}"
+            elif 'ℹ️' in text:
+                text_clean = f"[Info] {text_clean}"
+            
+            print(f"{color}{text_clean}{Colors.RESET}", end=end)
     else:
         print(f"{color}{text}{Colors.RESET}", end=end)
 
