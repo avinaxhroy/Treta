@@ -1,18 +1,37 @@
 #!/bin/bash
+# Treta Music Downloader - Unix Auto-Installer (REDIRECTOR)
+# ==========================================================
 #
-# Treta Music Downloader - Unix/Linux/macOS Auto-Installer
-# =======================================================
-#
-# This script downloads and runs the Treta auto-installer.
-# It handles everything automatically: Python, dependencies, FFmpeg, setup.
+# This script redirects to the new enhanced remote installer.
+# The new installer downloads and sets up everything automatically!
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/avinaxhroy/Treta/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/avinaxhroy/treta/main/install.sh | bash
 #   or
-#   ./install.sh
+#   wget -qO- https://raw.githubusercontent.com/avinaxhroy/treta/main/install.sh | bash
 #
 
-set -e
+echo ""
+echo "🎵 Treta Auto-Installer - Redirecting to Enhanced Version..."
+echo ""
+echo "Loading the new enhanced remote installer..."
+echo ""
+
+# Download and run the new remote installer
+if command -v curl >/dev/null 2>&1; then
+    curl -fsSL https://raw.githubusercontent.com/avinaxhroy/treta/main/install_remote.sh | bash
+elif command -v wget >/dev/null 2>&1; then
+    wget -qO- https://raw.githubusercontent.com/avinaxhroy/treta/main/install_remote.sh | bash
+else
+    echo "❌ Error: Neither curl nor wget is available"
+    echo "Please install curl or wget and try again."
+    echo ""
+    echo "🔧 Fallback - Manual installation:"
+    echo "1. Download: https://github.com/avinaxhroy/treta/archive/refs/heads/main.zip"
+    echo "2. Extract the archive"
+    echo "3. Run: python install_auto.py --global-install"
+    exit 1
+fi
 
 # Colors for output
 RED='\033[0;31m'

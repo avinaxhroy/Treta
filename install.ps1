@@ -1,14 +1,33 @@
-# Treta Music Downloader - Windows PowerShell Auto-Installer
-# ===========================================================
+# Treta Music Downloader - Windows PowerShell Auto-Installer (REDIRECTOR)
+# ========================================================================
 #
-# This script downloads and runs the Treta auto-installer.
-# It handles everything automatically: Python, dependencies, FFmpeg, setup.
+# This script redirects to the new enhanced remote installer.
+# The new installer downloads and sets up everything automatically!
 #
 # Usage:
-#   powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/avinaxhroy/Treta/main/install.ps1 | iex"
+#   powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/avinaxhroy/treta/main/install.ps1 | iex"
 #   or
 #   .\install.ps1
 #
+
+Write-Host ""
+Write-Host "🎵 Treta Auto-Installer - Redirecting to Enhanced Version..." -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Loading the new enhanced remote installer..." -ForegroundColor Yellow
+Write-Host ""
+
+# Download and run the new remote installer
+try {
+    $remoteInstallerUrl = "https://raw.githubusercontent.com/avinaxhroy/treta/main/install_remote.ps1"
+    Invoke-Expression (Invoke-RestMethod $remoteInstallerUrl)
+} catch {
+    Write-Host "❌ Failed to load remote installer: $_" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "🔧 Fallback - Running legacy installer..." -ForegroundColor Yellow
+    Write-Host ""
+    
+    # Continue with the original installer code below as fallback
+}
 
 # Enable colors in PowerShell
 $Host.UI.RawUI.ForegroundColor = "White"

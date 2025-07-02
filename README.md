@@ -51,13 +51,20 @@ install_easy.bat
 ```
 *This downloads the repository and runs the installer automatically - perfect for beginners!*
 
-**Option 2: PowerShell One-Liner**
+**🏆 Option 2: Remote One-Liner (Ultimate Convenience)**
+```powershell
+# Download and run the auto-installer from anywhere
+powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/avinaxhroy/treta/main/install_remote.ps1 | iex"
+```
+*Downloads the repository and installs everything automatically - works from any directory!*
+
+**Option 3: PowerShell One-Liner (Alternative)**
 ```powershell
 # Download and run the auto-installer
 powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/avinaxhroy/treta/main/install.ps1 | iex"
 ```
 
-**Option 3: Manual with Enhanced Features**
+**Option 4: Manual with Enhanced Features**
 ```cmd
 # Clone the repository
 git clone https://github.com/avinaxhroy/treta.git
@@ -76,7 +83,14 @@ python install_auto.py --global-install
 ```
 *Automatically handles everything including Python, dependencies, and global setup!*
 
-**Option 2: Direct Installation**
+**🏆 Option 2: Remote One-Liner (Ultimate Convenience)**
+```bash
+# Download and install from anywhere
+curl -fsSL https://raw.githubusercontent.com/avinaxhroy/treta/main/install_remote.sh | bash
+```
+*Downloads the repository and installs everything automatically - works from any directory!*
+
+**Option 3: Direct Installation**
 ```bash
 # Clone and install in one go
 git clone https://github.com/avinaxhroy/treta.git && cd treta && python3 install_auto.py --global-install
@@ -171,14 +185,16 @@ python setup_global.py --uninstall
 
 | Traditional Setup | 😴 | Treta Auto-Installer v2.0 | 🚀 |
 |-------------------|----|-----------------------------|-----|
+| Manual repo download | 📥 | **Auto-downloads latest repo** | ✅ |
 | Manual Python setup | ❌ | **Auto-detects & installs Python** | ✅ |
 | Dependency conflicts | 😵 | **Smart conflict resolution** | ✅ |
 | Missing FFmpeg errors | 💥 | **Auto-downloads FFmpeg** | ✅ |
 | Complex PATH setup | 🤯 | **Global command installation** | ✅ |
 | Cryptic error messages | 😖 | **Beautiful progress & clear errors** | ✅ |
 | Hours of troubleshooting | ⏰ | **2 minutes to working setup** | ⚡ |
+| **Works from repo only** | 📁 | **Works from anywhere** | 🌍 |
 
-> **💪 Result**: Go from zero to downloading your favorite music in under 2 minutes, with a beautiful installation experience that actually works!
+> **💪 Result**: Go from zero to downloading your favorite music in under 2 minutes, with a beautiful installation experience that works from any directory!
 - ✅ Downloads and sets up FFmpeg
 - ✅ Installs Treta as a global command
 - ✅ Guides you through service authentication
@@ -743,11 +759,28 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ## 🎵 Start Your Musical Journey Today!
 
-### ⚡ Two Ways to Get Started:
-1. **🏆 Easy Mode**: Download and double-click `install_easy.bat` (Windows) or `./install_easy.sh` (Unix)
-2. **⚙️ Advanced**: Clone repo and run `python install_auto.py --global-install`
+### ⚡ Three Ways to Get Started:
+1. **🏆 Ultimate Easy**: Run one PowerShell/bash command from anywhere (auto-downloads everything)
+2. **🎯 Easy Mode**: Download and double-click `install_easy.bat` (Windows) or `./install_easy.sh` (Unix)  
+3. **⚙️ Advanced**: Clone repo and run `python install_auto.py --global-install`
 
-Both give you the same beautiful, error-free installation experience in under 2 minutes!
+**All methods give you the same beautiful, error-free installation experience in under 2 minutes!**
+
+#### Windows (choose one):
+```powershell
+# Option 1: Remote installer (works from anywhere)
+powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/avinaxhroy/treta/main/install_remote.ps1 | iex"
+
+# Option 2: Download repo first, then double-click install_easy.bat
+```
+
+#### Unix/Linux/macOS (choose one):
+```bash
+# Option 1: Remote installer (works from anywhere)  
+curl -fsSL https://raw.githubusercontent.com/avinaxhroy/treta/main/install_remote.sh | bash
+
+# Option 2: Download repo first, then run ./install_easy.sh
+```
 
 ### [⬇️ Download Treta](https://github.com/avinaxhroy/treta/releases/latest) | [📖 Documentation](https://docs.treta.app) | [💬 Community(Coming soon)]() | [🐛 Report Issues](https://github.com/avinaxhroy/treta/issues)
 

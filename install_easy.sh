@@ -1,33 +1,66 @@
 #!/bin/bash
-# Treta Easy Installer for Unix/Linux/macOS
-# ========================================
+# Treta Easy Installer for Unix - Remote Version
+# ==============================================
 #
-# This script runs the Treta auto-installer with sensible defaults.
-# Run this script to install Treta automatically!
+# This script downloads and installs Treta automatically!
+# Works from anywhere - no need to download repository first!
 
 set -e  # Exit on error
 
+# Colors
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+RESET='\033[0m'
+
 echo
-echo "==============================================="
-echo "   Treta Music Downloader - Easy Installer"
-echo "==============================================="
+echo -e "${CYAN}===============================================${RESET}"
+echo -e "${CYAN}   Treta Music Downloader - Remote Installer${RESET}"
+echo -e "${CYAN}===============================================${RESET}"
 echo
-echo "This will automatically install everything you need:"
+echo "This will automatically download and install everything you need:"
+echo "  - Latest Treta repository from GitHub"
 echo "  - Python environment setup"
 echo "  - All music downloaders (Spotify, Apple, YouTube)"
 echo "  - Audio processing tools"
 echo "  - Global 'treta' command"
 echo
-
-# Get the directory where this script is located
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-echo "Script directory: $SCRIPT_DIR"
+echo -e "${BLUE}Working from: $(pwd)${RESET}"
 echo
 
-# Change to the script directory
-cd "$SCRIPT_DIR"
+# Check for required tools
+echo -e "${BLUE}Checking prerequisites...${RESET}"
 
-# Check if install_auto.py exists
+if ! command -v curl >/dev/null 2>&1 && ! command -v wget >/dev/null 2>&1; then
+    echo -e "${RED}Error: Neither curl nor wget is available${RESET}"
+    echo
+    echo "Please install curl or wget:"
+    echo "  Ubuntu/Debian: sudo apt update && sudo apt install curl"
+    echo "  CentOS/RHEL: sudo yum install curl"
+    echo "  macOS: curl is pre-installed"
+    echo
+    exit 1
+fi
+
+echo -e "${GREEN}Prerequisites check passed!${RESET}"
+echo
+
+# Download and run the remote installer
+echo -e "${BLUE}Starting remote installation...${RESET}"
+echo
+
+if command -v curl >/dev/null 2>&1; then
+    curl -fsSL https://raw.githubusercontent.com/avinaxhroy/treta/main/install_remote.sh | bash
+elif command -v wget >/dev/null 2>&1; then
+    wget -qO- https://raw.githubusercontent.com/avinaxhroy/treta/main/install_remote.sh | bash
+fi
+
+echo
+echo -e "${CYAN}Remote installation process completed.${RESET}"
+echo "Check the output above for any instructions or next steps."
+echo
 if [ ! -f "install_auto.py" ]; then
     echo "Error: install_auto.py not found in current directory!"
     echo "Current directory: $(pwd)"
