@@ -1,296 +1,351 @@
-# Treta Music Downloader
+# 🎵 Treta Music Downloader
 
 <div align="center">
 
-[![Release](https://img.shields.io/github/v/release/avinaxhroy/treta?style=flat-square)](https://github.com/avinaxhroy/treta/releases)
-[![Python](https://img.shields.io/badge/python-3.8%2B-blue?style=flat-square)](https://python.org)
-[![License](https://img.shields.io/github/license/avinaxhroy/treta?style=flat-square)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/avinaxhroy/treta?style=for-the-badge&logo=github)](https://github.com/avinaxhroy/treta/releases)
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue?style=for-the-badge&logo=python)](https://python.org)
+[![License](https://img.shields.io/github/license/avinaxhroy/treta?style=for-the-badge)](LICENSE)
+[![Downloads](https://img.shields.io/github/downloads/avinaxhroy/treta/total?style=for-the-badge)](https://github.com/avinaxhroy/treta/releases)
 
-A feature-rich music downloader supporting Spotify, Apple Music, and YouTube Music with AI-powered mood detection and automated setup.
+**A powerful, AI-enhanced music downloader with support for Spotify, Apple Music, and YouTube Music**
 
-[🚀 **Quick Install**](#installation) • [📖 **Documentation**](#usage) • [🐛 **Issues**](https://github.com/avinaxhroy/treta/issues)
+[🚀 **Quick Install**](#-installation) • [📖 **Documentation**](#-usage) • [�️ **Features**](#-features) • [❓ **Support**](https://github.com/avinaxhroy/treta/issues)
 
 </div>
 
-## Disclaimer
+---
 
-**Educational and personal use only.** Users must comply with platform terms of service and copyright laws. Requires valid subscriptions for premium services. The developers are not responsible for misuse of this software.
+## ⚠️ Important Disclaimer
 
-## Installation
+**This tool is for educational and personal use only.** Please respect copyright laws and platform terms of service. Premium subscriptions are required for premium services. The developers are not responsible for any misuse of this software.
 
-### One-Click Installation
+---
 
-**Windows:**
+## 🚀 Installation
+
+### One-Click Installation (Recommended)
+
+Get up and running in seconds with our automated installers:
+
+**Windows (PowerShell):**
 ```powershell
-# Remote installer (recommended)
 powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/avinaxhroy/treta/main/install_remote.ps1 | iex"
 ```
 
-**Linux/macOS:**
+**Linux/macOS (Bash):**
 ```bash
-# Remote installer (recommended)
 curl -fsSL https://raw.githubusercontent.com/avinaxhroy/treta/main/install_remote.sh | bash
 ```
 
 ### Manual Installation
 
+For advanced users who want more control:
+
 ```bash
-# Clone and install
+# Clone the repository
 git clone https://github.com/avinaxhroy/treta.git
 cd treta
+
+# Run the installer with global setup
 python install_auto.py --global-install
 ```
 
-The installer automatically handles:
-- Python detection and installation
-- Virtual environment setup
-- Dependency management
-- FFmpeg installation
-- Global command setup
+### What the Installer Does
 
-## Features
+Our smart installer automatically handles everything:
 
-### Supported Services
-| Service | Quality | Format | Requirements |
-|---------|---------|--------|--------------|
-| **Spotify** | FLAC/320kbps | FLAC/OGG | Premium Account |
-| **Apple Music** | AAC 256kbps | M4A | Active Subscription |
-| **YouTube Music** | Up to FLAC | FLAC/WEBM | None |
+- ✅ **Python Environment**: Detects and configures Python 3.8+
+- ✅ **Dependencies**: Installs all required packages
+- ✅ **FFmpeg**: Downloads and configures audio processing tools
+- ✅ **Virtual Environment**: Creates isolated Python environment
+- ✅ **Global Command**: Sets up `treta` command system-wide
+- ✅ **PATH Configuration**: Adds to system PATH automatically
 
-### Key Features
-- **AI Mood Detection**: Automatic music categorization
-- **Smart Organization**: Auto-sorted by service/artist/album
-- **Batch Downloads**: Process multiple URLs simultaneously
-- **Quality Control**: Premium audio formats with metadata
-- **Cross-Platform**: Windows, macOS, Linux support
+---
 
-## Usage
+## 🛠️ Features
 
-### Basic Commands
+### 🎧 Supported Platforms
 
+| Platform | Audio Quality | Formats | Requirements |
+|----------|---------------|---------|--------------|
+| **Spotify** | FLAC, 320kbps MP3 | FLAC, OGG | Premium Account |
+| **Apple Music** | AAC 256kbps | M4A, AAC | Active Subscription |
+| **YouTube Music** | Up to FLAC | FLAC, WEBM, MP3 | None (Free) |
+
+### ⭐ Key Features
+
+- 🤖 **AI Mood Detection**: Automatically categorizes music by mood and energy
+- 📁 **Smart Organization**: Auto-sorts downloads by service/artist/album
+- 🔄 **Batch Processing**: Download entire playlists and albums
+- 🎯 **High Quality**: Premium audio formats with complete metadata
+- 🌐 **Cross-Platform**: Works on Windows, macOS, and Linux
+- 🎨 **Interactive CLI**: Beautiful command-line interface with progress bars
+- 📊 **Statistics**: Track your download history and library stats
+- 🔍 **Smart Search**: Find and download music efficiently
+
+---
+
+## 📖 Usage
+
+### Getting Started
+
+After installation, simply run:
 ```bash
-# Launch interactive menu
 treta
-
-# Download single track
-treta download url "https://open.spotify.com/track/..."
-
-# Download multiple tracks
-treta download url "url1" "url2" "url3"
-
-# Download from file
-treta download batch --file urls.txt
 ```
 
-### Authentication
+This launches the interactive menu where you can:
+- Download individual tracks or playlists
+- Manage authentication for different services
+- View your download statistics
+- Analyze mood patterns in your library
 
+### Quick Commands
+
+**Download a single track:**
 ```bash
-# Setup service authentication
-treta auth add --service spotify
-treta auth add --service apple
+treta download url "https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC"
+```
 
-# Check authentication status
+**Download multiple URLs:**
+```bash
+treta download url "url1" "url2" "url3"
+```
+
+**Download from a file:**
+```bash
+treta download batch --file my_playlist.txt
+```
+
+**Download with specific quality:**
+```bash
+treta download url "spotify_url" --quality flac
+```
+
+### Authentication Setup
+
+Before downloading from premium services, set up authentication:
+
+**Spotify:**
+```bash
+treta auth add --service spotify
+# Follow the prompts to log in
+```
+
+**Apple Music:**
+```bash
+treta auth add --service apple
+# Enter your Apple ID credentials
+```
+
+**Check authentication status:**
+```bash
 treta auth status
 ```
 
-### Mood Analysis
+### Advanced Features
 
+**Mood Analysis:**
 ```bash
-# Analyze mood of library
+# Analyze your music library
 treta mood analyze
 
-# Create mood-based playlist
-treta mood playlist --mood "energetic" --count 20
+# Create mood-based playlists
+treta mood playlist --mood "energetic" --count 25
 ```
 
-### Statistics
-
+**Library Statistics:**
 ```bash
-# View library statistics
+# View download statistics
 treta stats overview
 
-# View top artists
+# Top artists in your library
 treta stats artists --top 10
+
+# Storage usage breakdown
+treta stats storage
 ```
 
-## Directory Structure
+**Queue Management:**
+```bash
+# View download queue
+treta queue list
+
+# Pause/resume downloads
+treta queue pause
+treta queue resume
+
+# Clear completed downloads
+treta queue clear
+```
+
+---
+
+## 📁 File Organization
+
+Treta organizes your downloads in a clean, logical structure:
 
 ```
 downloads/
-├── spotify/        # Spotify downloads
-├── apple/          # Apple Music downloads
-└── youtube/        # YouTube Music downloads
+├── spotify/
+│   ├── Artist Name/
+│   │   ├── Album Name/
+│   │   │   ├── 01 - Track Name.flac
+│   │   │   ├── 02 - Track Name.flac
+│   │   │   └── cover.jpg
+│   │   └── Singles/
+│   └── Playlists/
+├── apple/
+│   └── [Similar structure]
+├── youtube/
+│   └── [Similar structure]
+└── metadata/
+    ├── downloads.db
+    └── mood_analysis.json
 ```
 
-## Troubleshooting
+---
 
-### Health Check
+## 🔧 Troubleshooting
+
+### Health Check & Diagnostics
+
+Run our built-in diagnostic tool:
 ```bash
-# Run diagnostics
 python test_installation.py --verbose
+```
 
-# Auto-fix issues
+**Auto-fix common issues:**
+```bash
 python test_installation.py --fix-issues
 ```
 
-### Common Issues
+### Common Issues & Solutions
 
-**Installation Failed:**
+**❌ Installation Failed**
 ```bash
+# Force reinstall with verbose output
 python install_auto.py --force-reinstall --verbose
+
+# Manual dependency install
+pip install -r requirements.txt
 ```
 
-**Authentication Failed:**
+**❌ Authentication Issues**
 ```bash
+# Reset authentication
 treta auth remove --service spotify
 treta auth add --service spotify
+
+# Clear auth cache
+treta auth clear-cache
 ```
 
-**Global Command Not Found:**
-Restart your terminal after installation, or manually add the installation directory to your PATH.
+**❌ Global Command Not Found**
+```bash
+# Test global command setup
+python test_global_command.py
 
-## Contributing
+# Manual PATH configuration (if needed)
+# Windows: Add install directory to System PATH
+# Linux/macOS: Add to ~/.bashrc or ~/.zshrc
+```
+
+**❌ Download Failures**
+```bash
+# Retry failed downloads
+treta download retry
+
+# Update downloaders
+treta update components
+
+# Check service status
+treta status check
+```
+
+### Getting Help
+
+- 📖 **Full Documentation**: See `TROUBLESHOOTING.md`
+- 🐛 **Report Issues**: [GitHub Issues](https://github.com/avinaxhroy/treta/issues)
+- 💬 **Community Support**: [Discussions](https://github.com/avinaxhroy/treta/discussions)
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how to get started:
 
 ### Development Setup
+
 ```bash
+# Clone and setup development environment
 git clone https://github.com/avinaxhroy/treta.git
 cd treta
 python install_auto.py --verbose
+
+# Install development dependencies
 pip install -r requirements-dev.txt
+
+# Install pre-commit hooks
+pre-commit install
 ```
 
 ### Running Tests
+
 ```bash
+# Run all tests
 pytest tests/ -v
+
+# Run specific test categories
+pytest tests/test_downloader.py -v
+pytest tests/test_mood_detector.py -v
+
+# Run tests with coverage
+pytest --cov=treta tests/
 ```
 
-### Contributing Process
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests
-5. Submit a pull request
+### Contribution Guidelines
 
-## Acknowledgments
+1. 🍴 **Fork** the repository
+2. 🌿 **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. ✨ **Make** your changes with tests
+4. ✅ **Test** thoroughly (`pytest tests/`)
+5. 📝 **Commit** your changes (`git commit -m 'Add amazing feature'`)
+6. 🚀 **Push** to your branch (`git push origin feature/amazing-feature`)
+7. 🔄 **Submit** a Pull Request
 
-**Core Technologies:**
-- [Zotify](https://github.com/DraftKinner/zotify) - Spotify downloading
-- [GAMDL](https://github.com/glomatico/gamdl) - Apple Music downloading
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) - YouTube downloading
-- [librosa](https://librosa.org) - Audio analysis
-- [Typer](https://typer.tiangolo.com) - CLI framework
+---
 
-## License
+## 🙏 Acknowledgments
 
-MIT License - see [LICENSE](LICENSE) for details.
+Treta builds upon the excellent work of these projects:
+
+- **[Zotify](https://github.com/DraftKinner/zotify)** - Spotify downloading engine
+- **[GAMDL](https://github.com/glomatico/gamdl)** - Apple Music downloader
+- **[yt-dlp](https://github.com/yt-dlp/yt-dlp)** - YouTube downloading
+- **[librosa](https://librosa.org)** - Audio analysis and mood detection
+- **[Rich](https://github.com/Textualize/rich)** - Beautiful terminal output
+- **[Typer](https://typer.tiangolo.com)** - Modern CLI framework
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
 <div align="center">
 
-**Made with ❤️ for music lovers**
+**🎵 Made with ❤️ for music lovers everywhere 🎵**
 
-[Download](https://github.com/avinaxhroy/treta/releases) • [Report Issues](https://github.com/avinaxhroy/treta/issues)
+[⬇️ Download Latest](https://github.com/avinaxhroy/treta/releases/latest) • [📝 Report Bug](https://github.com/avinaxhroy/treta/issues/new) • [💡 Request Feature](https://github.com/avinaxhroy/treta/issues/new)
+
+---
+
+### Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=avinaxhroy/treta&type=Date)](https://star-history.com/#avinaxhroy/treta&Date)
 
 </div>
-
-## Features
-
-### Supported Services
-| Service | Quality | Format | Requirements |
-|---------|---------|--------|--------------|
-| **Spotify** | FLAC/320kbps | FLAC/OGG | Premium Account |
-| **Apple Music** | AAC 256kbps | M4A | Active Subscription |
-| **YouTube Music** | Up to FLAC | FLAC/WEBM | None |
-
-### Key Features
-- **AI Mood Detection**: Automatic music categorization
-- **Smart Organization**: Auto-sorted by service/artist/album
-- **Batch Downloads**: Process multiple URLs simultaneously
-- **Quality Control**: Premium audio formats with metadata
-- **Cross-Platform**: Windows, macOS, Linux support
-
-## Usage
-
-### Basic Commands
-
-```bash
-# Launch interactive menu
-treta
-
-# Download single track
-treta download url "https://open.spotify.com/track/..."
-
-# Download multiple tracks
-treta download url "url1" "url2" "url3"
-
-# Download from file
-treta download batch --file urls.txt
-```
-
-### Authentication
-
-```bash
-# Setup service authentication
-treta auth add --service spotify
-treta auth add --service apple
-
-# Check authentication status
-treta auth status
-```
-
-### Mood Analysis
-
-```bash
-# Analyze mood of library
-treta mood analyze
-
-# Create mood-based playlist
-treta mood playlist --mood "energetic" --count 20
-```
-
-### Statistics
-
-```bash
-# View library statistics
-treta stats overview
-
-# View top artists
-treta stats artists --top 10
-```
-
-## Directory Structure
-
-```
-downloads/
-├── spotify/        # Spotify downloads
-├── apple/          # Apple Music downloads
-└── youtube/        # YouTube Music downloads
-```
-
-## Troubleshooting
-
-### Health Check
-```bash
-# Run diagnostics
-python test_installation.py --verbose
-
-# Auto-fix issues
-python test_installation.py --fix-issues
-```
-
-### Common Issues
-
-**Installation Failed:**
-```bash
-python install_auto.py --force-reinstall --verbose
-```
-
-**Authentication Failed:**
-```bash
-treta auth remove --service spotify
-treta auth add --service spotify
-```
-
-**Global Command Not Found:**
-Restart your terminal after installation, or manually add the installation directory to your PATH.
