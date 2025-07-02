@@ -49,8 +49,18 @@ import json
 import tempfile
 import argparse
 import time
+import ctypes
+import re
+import traceback
 from pathlib import Path
 from typing import Optional, List, Tuple, Dict
+
+# Windows-specific imports
+if platform.system().lower() == 'windows':
+    try:
+        import winreg
+    except ImportError:
+        winreg = None
 
 # ANSI color codes for cross-platform colored output
 class Colors:
@@ -1325,7 +1335,8 @@ exec "$VENV_PYTHON" "$SCRIPT_DIR/treta.py" "$@"
             
             # Create subdirectories
             for service in ['spotify', 'apple', 'youtube']:
-                (downloads_dir / service).mkdir(exist_ok=True)            
+                (downloads_dir / service).mkdir(exist_ok=True)
+                
             print_success("Configuration setup completed")
             return True
             

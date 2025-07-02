@@ -19,6 +19,25 @@ echo   - Audio processing tools
 echo   - Global 'treta' command
 echo.
 
+REM Get the directory where this batch file is located
+set "SCRIPT_DIR=%~dp0"
+echo Script directory: %SCRIPT_DIR%
+echo.
+
+REM Change to the script directory
+cd /d "%SCRIPT_DIR%"
+
+REM Check if install_auto.py exists in current directory
+if not exist "install_auto.py" (
+    echo Error: install_auto.py not found in current directory!
+    echo Current directory: %CD%
+    echo.
+    echo Please make sure you're running this from the Treta directory.
+    echo.
+    pause
+    exit /b 1
+)
+
 REM Check if Python is available
 python --version >nul 2>&1
 if %errorlevel% neq 0 (
@@ -34,6 +53,7 @@ if %errorlevel% neq 0 (
 )
 
 echo Python found! Starting installation...
+echo Working directory: %CD%
 echo.
 
 REM Run the installer with global install option

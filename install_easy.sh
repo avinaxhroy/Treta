@@ -19,6 +19,24 @@ echo "  - Audio processing tools"
 echo "  - Global 'treta' command"
 echo
 
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+echo "Script directory: $SCRIPT_DIR"
+echo
+
+# Change to the script directory
+cd "$SCRIPT_DIR"
+
+# Check if install_auto.py exists
+if [ ! -f "install_auto.py" ]; then
+    echo "Error: install_auto.py not found in current directory!"
+    echo "Current directory: $(pwd)"
+    echo
+    echo "Please make sure you're running this from the Treta directory."
+    echo
+    exit 1
+fi
+
 # Check if Python is available
 if ! command -v python3 &> /dev/null && ! command -v python &> /dev/null; then
     echo "Error: Python not found!"
@@ -40,6 +58,7 @@ else
 fi
 
 echo "Python found! Starting installation..."
+echo "Working directory: $(pwd)"
 echo
 
 # Run the installer with global install option
