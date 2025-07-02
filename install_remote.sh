@@ -277,13 +277,23 @@ install_treta() {
     print_info "   python test_installation.py"
     echo ""
     
-    print_info "2. Authenticate with your music services:"
+    print_info "2. IMPORTANT: Restart your terminal!"
+    print_info "   (The global 'treta' command needs a fresh terminal session)"
+    echo ""
+    
+    print_info "3. Authenticate with your music services:"
     print_info "   treta auth add --service spotify"
     print_info "   treta auth add --service apple"
     echo ""
     
-    print_info "3. Download your first song:"
+    print_info "4. Download your first song:"
     print_info "   treta download url \"https://open.spotify.com/track/...\""
+    echo ""
+    
+    print_warning "If 'treta' command doesn't work after restart:"
+    print_info "• Navigate to: $install_dir"
+    print_info "• Use: python treta.py [command] instead"
+    print_info "• Or use: ./treta [command]"
     echo ""
     
     print_colored "📖 Installation Directory:" "$CYAN$BOLD"

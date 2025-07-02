@@ -264,13 +264,23 @@ function Install-Treta {
         Write-Info "   python test_installation.py"
         Write-Host ""
         
-        Write-Info "2. Authenticate with your music services:"
+        Write-Info "2. IMPORTANT: Restart your PowerShell/Command Prompt!"
+        Write-Info "   (The global 'treta' command needs a fresh terminal session)"
+        Write-Host ""
+        
+        Write-Info "3. Authenticate with your music services:"
         Write-Info "   treta auth add --service spotify"
         Write-Info "   treta auth add --service apple"
         Write-Host ""
         
-        Write-Info "3. Download your first song:"
+        Write-Info "4. Download your first song:"
         Write-Info "   treta download url `"https://open.spotify.com/track/...`""
+        Write-Host ""
+        
+        Write-Warning "If 'treta' command doesn't work after restart:"
+        Write-Info "• Navigate to: $installDir"
+        Write-Info "• Use: python treta.py [command] instead"
+        Write-Info "• Or use: .\\treta.bat [command]"
         Write-Host ""
         
         Write-ColoredOutput "📖 Installation Directory:" "Cyan"

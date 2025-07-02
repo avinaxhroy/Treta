@@ -81,3 +81,29 @@ zotify_config/
 config.json
 credentials.json
 zconfig.json
+
+# Development and testing files
+debug*.bat
+debug*.py
+test_*.py
+installation_test.py
+*_test.py
+*_backup.py
+*_new.*
+*_simple.*
+create_release.py
+test_unicode.py
+health_check.py
+fix_*.py
+
+# Auto-generated files
+.treta_installed
+.permission_test
+.install_test
+temp_requirements.txt
+diagnostic.txt
+
+# Release files
+*.zip
+RELEASE_NOTES_*.md
+RELEASE_SUMMARY.md
