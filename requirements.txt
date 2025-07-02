@@ -2,8 +2,6 @@
 # 
 # IMPORTANT: Requires Python 3.11 or greater (as required by zotify)
 # DraftKinner's zotify fork is actively maintained and should work with Python 3.12+
-# 
-# This uses the stable v1.0.1 release of DraftKinner's zotify
 
 # Core framework
 typer>=0.9.0
@@ -28,12 +26,10 @@ requests>=2.31.0
 
 # Music downloaders
 gamdl>=2.4.0
-# Zotify (Spotify downloader) - using stable v1.0.1 from DraftKinner's fork
-# Note: librespot-python dependency conflicts are handled by the installer
 git+https://github.com/DraftKinner/zotify.git@v1.0.1
 yt-dlp>=2023.12.30
 
 # Additional audio libraries (optional but recommended)
-soundfile>=0.12.0  # For librosa audio loading
-numba>=0.57.0     # For librosa performance
-resampy>=0.4.0    # For librosa resampling
+soundfile>=0.12.0
+numba>=0.57.0
+resampy>=0.4.0

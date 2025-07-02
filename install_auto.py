@@ -153,19 +153,23 @@ class TretaInstaller:
                 print_warning("Some dependencies failed to install. Treta may have limited functionality.")
                 print_info("You can run 'python test_installation.py' to check what's missing")
                 
-            # Step 4: Install external tools (FFmpeg, etc.)
+            # Step 4: Install Treta package for global 'treta' command
+            if not self.install_package():
+                print_warning("Package installation failed. Use scripts or 'python treta.py' instead.")
+                
+            # Step 5: Install external tools (FFmpeg, etc.)
             if not self.install_external_tools():
                 print_warning("Some external tools may not be available. Audio processing features may be limited.")
                 
-            # Step 5: Create launcher scripts
+            # Step 6: Create launcher scripts
             if not self.create_launchers():
                 print_warning("Launcher script creation failed. You can still run Treta manually.")
                 
-            # Step 6: Setup configuration
+            # Step 7: Setup configuration
             if not self.setup_configuration():
                 print_warning("Configuration setup incomplete. You can configure manually later.")
                 
-            # Step 7: Final verification
+            # Step 8: Final verification
             verification_success = self.verify_installation()
             if not verification_success:
                 print_warning("Installation verification had issues.")
@@ -786,6 +790,34 @@ cd "{self.project_dir}"
         # Make executable
         os.chmod(launcher_path, 0o755)
     
+    def install_package(self) -> bool:
+        """Install Treta package in development mode for global 'treta' command."""
+        print_step("Installing Treta package for global access...")
+        
+        try:
+            if not self.venv_python:
+                print_error("Virtual environment not available")
+                return False
+            
+            # Install the current directory as an editable package
+            result = subprocess.run([
+                str(self.venv_python), '-m', 'pip', 'install', '-e', '.'
+            ], cwd=self.project_dir, capture_output=True, text=True, timeout=120)
+            
+            if result.returncode == 0:
+                print_success("Treta package installed successfully")
+                print_info("You can now use 'treta' command globally (within the virtual environment)")
+                return True
+            else:
+                print_warning(f"Package installation failed: {result.stderr}")
+                print_info("You can still use 'python treta.py' or the launcher scripts")
+                return False
+                
+        except Exception as e:
+            print_warning(f"Package installation failed: {e}")
+            print_info("You can still use 'python treta.py' or the launcher scripts")
+            return False
+    
     def setup_configuration(self) -> bool:
         """Setup initial configuration."""
         print_step("Setting up configuration...")
@@ -847,30 +879,52 @@ cd "{self.project_dir}"
         print()
         
         print_info("Next steps:")
-        print_colored("1. Authenticate with your music services:", Colors.CYAN)
+        print_colored("1. Activate the virtual environment:", Colors.CYAN)
         
         if self.system == 'windows':
+            print_colored("   .venv\\Scripts\\activate", Colors.WHITE)
+        else:
+            print_colored("   source .venv/bin/activate", Colors.WHITE)
+        
+        print()
+        print_colored("2. Authenticate with your music services:", Colors.CYAN)
+        
+        if self.system == 'windows':
+            print_colored("   treta auth add --service spotify  # (in activated venv)", Colors.WHITE)
+            print_colored("   # OR without venv activation:", Colors.CYAN)
             print_colored("   treta.bat auth add --service spotify", Colors.WHITE)
             print_colored("   treta.bat auth add --service apple", Colors.WHITE)
         else:
+            print_colored("   treta auth add --service spotify  # (in activated venv)", Colors.WHITE)
+            print_colored("   # OR without venv activation:", Colors.CYAN)
             print_colored("   ./treta auth add --service spotify", Colors.WHITE)
             print_colored("   ./treta auth add --service apple", Colors.WHITE)
         
         print()
-        print_colored("2. Start downloading music:", Colors.CYAN)
+        print_colored("3. Start downloading music:", Colors.CYAN)
         
         if self.system == 'windows':
+            print_colored('   treta download url "https://open.spotify.com/track/..."  # (in activated venv)', Colors.WHITE)
+            print_colored("   # OR without venv activation:", Colors.CYAN)
             print_colored('   treta.bat download url "https://open.spotify.com/track/..."', Colors.WHITE)
         else:
+            print_colored('   treta download url "https://open.spotify.com/track/..."  # (in activated venv)', Colors.WHITE)
+            print_colored("   # OR without venv activation:", Colors.CYAN)
             print_colored('   ./treta download url "https://open.spotify.com/track/..."', Colors.WHITE)
         
         print()
-        print_colored("3. Explore all features:", Colors.CYAN)
+        print_colored("4. Explore all features:", Colors.CYAN)
         
         if self.system == 'windows':
+            print_colored("   treta guide    # (in activated venv)", Colors.WHITE)
+            print_colored("   treta examples # (in activated venv)", Colors.WHITE)
+            print_colored("   # OR:", Colors.CYAN)
             print_colored("   treta.bat guide", Colors.WHITE)
             print_colored("   treta.bat examples", Colors.WHITE)
         else:
+            print_colored("   treta guide    # (in activated venv)", Colors.WHITE)
+            print_colored("   treta examples # (in activated venv)", Colors.WHITE)
+            print_colored("   # OR:", Colors.CYAN)
             print_colored("   ./treta guide", Colors.WHITE)
             print_colored("   ./treta examples", Colors.WHITE)
         

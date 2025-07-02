@@ -153,6 +153,14 @@ def _download_spotify_track_simple(url: str) -> List[Track]:
 def _download_youtube_track_simple(url: str) -> List[Track]:
     """Download a single YouTube Music track with progress bar."""
     try:
+        # First check if yt-dlp is available as a module
+        try:
+            import yt_dlp
+        except ImportError:
+            console.print("❌ [red]yt-dlp module not installed. Please install it: pip install yt-dlp[/red]")
+            console.print("💡 [cyan]Or try: python -m pip install --user yt-dlp[/cyan]")
+            return []
+            
         console.print("🎵 [bold blue]Starting YouTube Music download...[/bold blue]")
         console.print("🎼 [cyan]Quality: FLAC (Highest) | Organization: By Artist[/cyan]")
         
@@ -161,8 +169,9 @@ def _download_youtube_track_simple(url: str) -> List[Track]:
         downloads_dir.mkdir(parents=True, exist_ok=True)
         
         # Try to use yt-dlp for YouTube Music download with highest quality
+        # Use Python -m yt_dlp to ensure it finds the module even if not in PATH
         cmd = [
-            "yt-dlp",
+            sys.executable, "-m", "yt_dlp",
             "--extract-audio",
             "--audio-format", "flac",  # FLAC for highest quality
             "--audio-quality", "0",    # Best quality available
@@ -263,8 +272,13 @@ def _download_youtube_track_simple(url: str) -> List[Track]:
             console.print("💡 [yellow]Make sure yt-dlp is installed: pip install yt-dlp[/yellow]")
             return []
             
-    except FileNotFoundError:
-        console.print("❌ [red]yt-dlp not found. Please install it: pip install yt-dlp[/red]")
+    except FileNotFoundError as e:
+        # Check if it's specifically yt-dlp that's missing
+        if "yt_dlp" in str(e) or "yt-dlp" in str(e):
+            console.print("❌ [red]yt-dlp module not found. Please install it: pip install yt-dlp[/red]")
+            console.print("💡 [cyan]Or try: python -m pip install --user yt-dlp[/cyan]")
+        else:
+            console.print(f"❌ [red]Command not found: {e}[/red]")
         return []
     except Exception as e:
         console.print(f"❌ [red]Error during YouTube download: {e}[/red]")

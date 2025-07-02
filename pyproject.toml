@@ -50,7 +50,7 @@ Repository = "https://github.com/avinaxhroy/Treta"
 Issues = "https://github.com/avinaxhroy/Treta/issues"
 
 [project.scripts]
-treta = "treta:main"
+treta = "treta:app"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
