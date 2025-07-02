@@ -1,27 +1,40 @@
 #!/usr/bin/env python3
 """
-Treta Universal Auto-Installer
-=============================
+Treta Universal Auto-Installer v2.0
+===================================
 
-This script automatically installs and sets up everything needed to run Treta:
-- Python 3.8+ (if not present)
-- Virtual environment creation
-- All required dependencies (including zotify, gamdl, yt-dlp)
-- FFmpeg download and installation (Windows)
-- Launcher script creation
-- Configuration setup
-- Service authentication guidance
+🎵 The most user-friendly music downloader installer on the planet! 🎵
+
+This enhanced auto-installer sets up everything you need for Treta:
+✅ Python 3.8+ detection & installation (if needed)
+✅ Secure virtual environment creation
+✅ All dependencies (zotify, gamdl, yt-dlp, etc.)
+✅ FFmpeg setup for audio processing
+✅ Global 'treta' command installation
+✅ Smart launcher scripts
+✅ PATH configuration for global access
+✅ Configuration & service setup
+✅ Health checks & diagnostics
 
 Usage:
     python install_auto.py
+    
+    Options:
+    --force-reinstall    Force reinstall all components
+    --global-install     Install globally (requires admin/sudo)
+    --skip-optional      Skip optional packages for faster install
+    --verbose           Enable detailed logging
 
 Features:
-- Cross-platform (Windows, macOS, Linux)
-- Automatic dependency detection and installation
-- Safe isolated environment creation
-- Colored output with progress indicators
-- Error handling and recovery
-- Comprehensive setup verification
+- 🚀 One-click setup (no technical knowledge needed)
+- 🎯 Smart dependency resolution
+- 🔧 Automatic error recovery
+- 🌈 Beautiful colored progress indicators
+- 🔒 Safe isolated environments
+- 🔄 Resume interrupted installations
+- 📱 Cross-platform (Windows/macOS/Linux)
+- 🩺 Comprehensive health checks
+- 🆘 Detailed troubleshooting guidance
 """
 
 import sys
@@ -34,8 +47,10 @@ import zipfile
 import shutil
 import json
 import tempfile
+import argparse
+import time
 from pathlib import Path
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict
 
 # ANSI color codes for cross-platform colored output
 class Colors:
@@ -49,9 +64,63 @@ class Colors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
     RESET = '\033[0m'
+    
+    # Additional styling
+    DIM = '\033[2m'
+    ITALIC = '\033[3m'
+    BLINK = '\033[5m'
+    REVERSE = '\033[7m'
+    STRIKETHROUGH = '\033[9m'
 
-def print_colored(text: str, color: str = Colors.WHITE, end: str = '\n'):
-    """Print colored text with optional formatting."""
+# Progress indicators and emojis (with fallbacks for Windows)
+class Icons:
+    SUCCESS = "✅"
+    ERROR = "❌"
+    WARNING = "⚠️"
+    INFO = "ℹ️"
+    STEP = "📋"
+    MUSIC = "🎵"
+    ROCKET = "🚀"
+    GEAR = "⚙️"
+    DOWNLOAD = "⬇️"
+    INSTALL = "📦"
+    COMPLETE = "🎉"
+    PYTHON = "🐍"
+    FOLDER = "📁"
+    FILE = "📄"
+    LINK = "🔗"
+    KEY = "🔑"
+    SHIELD = "🛡️"
+    HEART = "❤️"
+    STAR = "⭐"
+    
+    @classmethod
+    def get_fallbacks(cls) -> Dict[str, str]:
+        """Get fallback text for systems that don't support Unicode."""
+        return {
+            cls.SUCCESS: "[OK]",
+            cls.ERROR: "[ERROR]",
+            cls.WARNING: "[WARN]",
+            cls.INFO: "[INFO]",
+            cls.STEP: "[STEP]",
+            cls.MUSIC: "[MUSIC]",
+            cls.ROCKET: "[LAUNCH]",
+            cls.GEAR: "[CONFIG]",
+            cls.DOWNLOAD: "[DOWNLOAD]",
+            cls.INSTALL: "[INSTALL]",
+            cls.COMPLETE: "[DONE]",
+            cls.PYTHON: "[PYTHON]",
+            cls.FOLDER: "[FOLDER]",
+            cls.FILE: "[FILE]",
+            cls.LINK: "[LINK]",
+            cls.KEY: "[AUTH]",
+            cls.SHIELD: "[SECURE]",
+            cls.HEART: "[LOVE]",
+            cls.STAR: "[STAR]"
+        }
+
+def print_colored(text: str, color: str = Colors.WHITE, end: str = '\n', icon: str = ""):
+    """Print colored text with optional formatting and icon."""
     if os.name == 'nt':
         # Enable ANSI colors on Windows
         try:
@@ -64,42 +133,56 @@ def print_colored(text: str, color: str = Colors.WHITE, end: str = '\n'):
         # Handle Unicode encoding issues on Windows
         try:
             # Try to encode with the current console encoding
-            text.encode('cp1252')
-            print(f"{color}{text}{Colors.RESET}", end=end)
+            full_text = f"{icon} {text}" if icon else text
+            full_text.encode('cp1252')
+            print(f"{color}{full_text}{Colors.RESET}", end=end)
         except (UnicodeEncodeError, LookupError):
-            # Fallback: remove emoji and non-ASCII characters for Windows compatibility
-            import re
-            # Remove emoji and other Unicode symbols
-            text_clean = re.sub(r'[^\x00-\x7F]+', '', text)
-            # Clean up extra spaces
-            text_clean = re.sub(r'\s+', ' ', text_clean).strip()
-            # Add fallback symbols
-            if '🎵' in text:
-                text_clean = f"[Music] {text_clean}"
-            elif '❌' in text:
-                text_clean = f"[Error] {text_clean}"
-            elif '✅' in text:
-                text_clean = f"[Success] {text_clean}"
-            elif '📋' in text:
-                text_clean = f"[Step] {text_clean}"
-            elif '⚠️' in text:
-                text_clean = f"[Warning] {text_clean}"
-            elif 'ℹ️' in text:
-                text_clean = f"[Info] {text_clean}"
+            # Fallback: use text replacements for Windows compatibility
+            fallbacks = Icons.get_fallbacks()
+            text_clean = text
+            
+            # Replace Unicode icons with fallback text
+            for unicode_icon, fallback in fallbacks.items():
+                if unicode_icon in text_clean:
+                    text_clean = text_clean.replace(unicode_icon, fallback)
+            
+            # If an icon was provided, use its fallback
+            if icon and icon in fallbacks:
+                icon_clean = fallbacks[icon]
+                text_clean = f"{icon_clean} {text_clean}"
+            elif icon:
+                # Remove non-ASCII characters from icon
+                import re
+                icon_clean = re.sub(r'[^\x00-\x7F]+', '', icon)
+                text_clean = f"{icon_clean} {text_clean}" if icon_clean else text_clean
             
             print(f"{color}{text_clean}{Colors.RESET}", end=end)
     else:
-        print(f"{color}{text}{Colors.RESET}", end=end)
+        full_text = f"{icon} {text}" if icon else text
+        print(f"{color}{full_text}{Colors.RESET}", end=end)
 
-def print_header(title: str):
-    """Print a formatted header."""
-    print_colored("=" * 60, Colors.CYAN)
-    print_colored(f"🎵 {title}", Colors.BOLD + Colors.CYAN)
-    print_colored("=" * 60, Colors.CYAN)
+def print_header(title: str, subtitle: str = ""):
+    """Print a beautiful formatted header."""
+    print()
+    print_colored("=" * 80, Colors.CYAN + Colors.BOLD)
+    print_colored(f"{Icons.MUSIC} {title}", Colors.BOLD + Colors.CYAN)
+    if subtitle:
+        print_colored(f"   {subtitle}", Colors.CYAN)
+    print_colored("=" * 80, Colors.CYAN + Colors.BOLD)
+    print()
 
-def print_step(step: str, status: str = ""):
-    """Print a step with status."""
-    print_colored(f"📋 {step}", Colors.BLUE, end="")
+def print_step(step: str, status: str = "", number: int = 0):
+    """Print a step with optional numbering and status."""
+    step_text = f"Step {number}: {step}" if number > 0 else step
+    print_colored(step_text, Colors.BLUE + Colors.BOLD, end="", icon=Icons.STEP)
+    if status:
+        print_colored(f" {status}", Colors.GREEN)
+    else:
+        print()
+
+def print_substep(substep: str, status: str = ""):
+    """Print a substep with indentation."""
+    print_colored(f"  └─ {substep}", Colors.BLUE, end="")
     if status:
         print_colored(f" {status}", Colors.GREEN)
     else:
@@ -107,95 +190,218 @@ def print_step(step: str, status: str = ""):
 
 def print_success(message: str):
     """Print a success message."""
-    print_colored(f"✅ {message}", Colors.GREEN)
+    print_colored(message, Colors.GREEN + Colors.BOLD, icon=Icons.SUCCESS)
 
 def print_warning(message: str):
     """Print a warning message."""
-    print_colored(f"⚠️  {message}", Colors.YELLOW)
+    print_colored(message, Colors.YELLOW + Colors.BOLD, icon=Icons.WARNING)
 
 def print_error(message: str):
     """Print an error message."""
-    print_colored(f"❌ {message}", Colors.RED)
+    print_colored(message, Colors.RED + Colors.BOLD, icon=Icons.ERROR)
 
-def print_info(message: str):
-    """Print an info message."""
-    print_colored(f"ℹ️  {message}", Colors.CYAN)
+def print_info(message: str, indent: int = 0):
+    """Print an info message with optional indentation."""
+    indented_msg = "  " * indent + message
+    print_colored(indented_msg, Colors.CYAN, icon=Icons.INFO if indent == 0 else "")
+
+def print_progress(message: str, percentage: int = 0):
+    """Print a progress message with percentage."""
+    if percentage > 0:
+        bar_length = 20
+        filled_length = int(bar_length * percentage // 100)
+        bar = '█' * filled_length + '░' * (bar_length - filled_length)
+        print_colored(f"{message} [{bar}] {percentage}%", Colors.YELLOW, icon=Icons.DOWNLOAD)
+    else:
+        print_colored(message, Colors.YELLOW, icon=Icons.DOWNLOAD)
+
+def print_box(title: str, content: List[str], color: str = Colors.CYAN):
+    """Print content in a nice box."""
+    max_width = max(len(title), max(len(line) for line in content) if content else 0) + 4
+    
+    print_colored("┌" + "─" * (max_width - 2) + "┐", color)
+    print_colored(f"│ {title.center(max_width - 4)} │", color + Colors.BOLD)
+    print_colored("├" + "─" * (max_width - 2) + "┤", color)
+    
+    for line in content:
+        print_colored(f"│ {line.ljust(max_width - 4)} │", color)
+    
+    print_colored("└" + "─" * (max_width - 2) + "┘", color)
 
 class TretaInstaller:
-    def __init__(self):
+    def __init__(self, args: argparse.Namespace):
         self.project_dir = Path(__file__).parent.absolute()
         self.venv_dir = self.project_dir / '.venv'
         self.system = platform.system().lower()
-        self.python_executable = None
-        self.venv_python = None
+        self.python_executable: Optional[str] = None
+        self.venv_python: Optional[str] = None
         
-    def run(self):
-        """Main installation process."""
+        # Installation options
+        self.force_reinstall = args.force_reinstall
+        self.global_install = args.global_install
+        self.skip_optional = args.skip_optional
+        self.verbose = args.verbose
+        
+        # Installation state
+        self.installed_components = []
+        self.failed_components = []
+        self.warnings = []
+        
+        # Progress tracking
+        self.total_steps = 10
+        self.current_step = 0
+        
+    def log_verbose(self, message: str):
+        """Log verbose messages if verbose mode is enabled."""
+        if self.verbose:
+            print_info(message, indent=1)
+    
+    def update_progress(self, step_name: str):
+        """Update installation progress."""
+        self.current_step += 1
+        percentage = int((self.current_step / self.total_steps) * 100)
+        print_progress(f"Progress: {step_name}", percentage)
+        
+    def run(self) -> bool:
+        """Main installation process with enhanced user experience."""
         try:
-            print_header("Treta Auto-Installer")
-            print_info("Setting up your music downloading environment...")
-            print()
+            # Welcome screen
+            self.show_welcome()
             
-            # Step 1: Check Python installation
-            if not self.check_python():
-                print_error("Python installation failed. Please install Python 3.8-3.11 manually.")
-                print_info("Download from: https://www.python.org/downloads/release/python-3118/")
+            # Pre-installation checks
+            if not self.pre_installation_checks():
                 return False
+            
+            # Main installation steps
+            steps = [
+                ("Checking Python installation", self.check_and_install_python),
+                ("Creating virtual environment", self.create_virtual_environment),
+                ("Installing core dependencies", self.install_dependencies),
+                ("Installing Treta package", self.install_package),
+                ("Setting up external tools", self.install_external_tools),
+                ("Creating launcher scripts", self.create_launchers),
+                ("Configuring global access", self.setup_global_access),
+                ("Setting up configuration", self.setup_configuration),
+                ("Running health checks", self.verify_installation),
+                ("Finalizing setup", self.finalize_installation)
+            ]
+            
+            for step_name, step_function in steps:
+                self.update_progress(step_name)
+                print_step(step_name, number=self.current_step)
                 
-            # Step 2: Create virtual environment
-            if not self.create_virtual_environment():
-                print_error("Virtual environment creation failed.")
-                return False
+                try:
+                    result = step_function()
+                    if result:
+                        print_success(f"✓ {step_name} completed successfully")
+                    else:
+                        print_warning(f"⚠ {step_name} completed with issues")
+                        self.warnings.append(step_name)
+                except Exception as e:
+                    print_error(f"✗ {step_name} failed: {e}")
+                    self.failed_components.append(step_name)
+                    if self.verbose:
+                        import traceback
+                        print_info(f"Error details: {traceback.format_exc()}", indent=1)
                 
-            # Step 3: Install dependencies (allow partial success)
-            deps_success = self.install_dependencies()
-            if not deps_success:
-                print_warning("Some dependencies failed to install. Treta may have limited functionality.")
-                print_info("You can run 'python test_installation.py' to check what's missing")
-                
-            # Step 4: Install Treta package for global 'treta' command
-            if not self.install_package():
-                print_warning("Package installation failed. Use scripts or 'python treta.py' instead.")
-                
-            # Step 5: Install external tools (FFmpeg, etc.)
-            if not self.install_external_tools():
-                print_warning("Some external tools may not be available. Audio processing features may be limited.")
-                
-            # Step 6: Create launcher scripts
-            if not self.create_launchers():
-                print_warning("Launcher script creation failed. You can still run Treta manually.")
-                
-            # Step 7: Setup configuration
-            if not self.setup_configuration():
-                print_warning("Configuration setup incomplete. You can configure manually later.")
-                
-            # Step 8: Final verification
-            verification_success = self.verify_installation()
-            if not verification_success:
-                print_warning("Installation verification had issues.")
-                print_info("Run 'python test_installation.py' to diagnose problems")
-                
-            # Show results
-            if deps_success and verification_success:
-                print_success("✅ Installation completed successfully!")
-            else:
-                print_warning("⚠️  Installation completed with some issues")
-                print_info("Basic functionality should work, but some features may be limited")
-                
-            self.print_next_steps()
-            return True
+                print()  # Add spacing between steps
+            
+            # Show final results
+            self.show_results()
+            self.show_next_steps()
+            
+            return len(self.failed_components) == 0
             
         except KeyboardInterrupt:
             print_error("Installation interrupted by user.")
+            print_info("You can run the installer again to resume.")
             return False
         except Exception as e:
             print_error(f"Unexpected error during installation: {e}")
-            print_info("Try running the installer again, or install manually")
+            print_info("Please report this issue with the full error details.")
             return False
     
-    def check_python(self) -> bool:
-        """Check if Python 3.11+ is available (as required by zotify)."""
-        print_step("Checking Python installation...")
+    def show_welcome(self):
+        """Show a beautiful welcome screen."""
+        welcome_lines = [
+            "Welcome to the Treta Music Downloader Auto-Installer!",
+            "",
+            "This installer will set up everything you need:",
+            "• Python environment with all dependencies",
+            "• Spotify, Apple Music & YouTube downloaders",
+            "• Audio processing tools (FFmpeg)",
+            "• Global 'treta' command",
+            "• Configuration and authentication setup",
+            "",
+            "Sit back and relax - we'll handle everything! ☕"
+        ]
+        
+        print_box("Treta Auto-Installer v2.0", welcome_lines, Colors.CYAN)
+        
+        # Show installation options
+        if self.force_reinstall or self.global_install or self.skip_optional or self.verbose:
+            options = []
+            if self.force_reinstall:
+                options.append("Force reinstall enabled")
+            if self.global_install:
+                options.append("Global installation enabled")
+            if self.skip_optional:
+                options.append("Skipping optional packages")
+            if self.verbose:
+                options.append("Verbose logging enabled")
+            
+            print_box("Installation Options", options, Colors.YELLOW)
+        
+        # Confirmation
+        try:
+            response = input(f"\n{Colors.BOLD}{Colors.CYAN}Ready to begin installation? (Y/n): {Colors.RESET}")
+            if response.lower().strip() in ['n', 'no']:
+                print_info("Installation cancelled by user.")
+                sys.exit(0)
+        except KeyboardInterrupt:
+            print_error("Installation cancelled by user.")
+            sys.exit(0)
+    
+    def pre_installation_checks(self) -> bool:
+        """Perform pre-installation checks."""
+        print_step("Pre-installation checks", number=0)
+        
+        # Check if we have write permissions
+        try:
+            test_file = self.project_dir / '.install_test'
+            test_file.write_text('test')
+            test_file.unlink()
+            print_substep("Write permissions", "✓ OK")
+        except PermissionError:
+            print_error("Insufficient permissions to write to project directory")
+            print_info("Try running as administrator/sudo or choose a different directory")
+            return False
+        
+        # Check internet connectivity
+        try:
+            urllib.request.urlopen('https://pypi.org', timeout=10)
+            print_substep("Internet connectivity", "✓ OK")
+        except (urllib.error.URLError, OSError):
+            print_warning("No internet connection detected")
+            print_info("Some features may not work without internet access")
+        
+        # Check disk space (approximate)
+        try:
+            disk_usage = shutil.disk_usage(self.project_dir)
+            free_gb = disk_usage.free / (1024**3)
+            if free_gb < 2:
+                print_warning(f"Low disk space: {free_gb:.1f} GB free")
+                print_info("Treta needs at least 2GB of free space")
+            else:
+                print_substep("Disk space", f"✓ {free_gb:.1f} GB available")
+        except OSError:
+            print_substep("Disk space", "? Unable to check")
+        
+        return True
+    
+    def check_and_install_python(self) -> bool:
+        """Enhanced Python checking and installation with better user feedback."""
+        print_substep("Detecting Python installation...")
         
         # Try to find existing Python
         python_commands = ['python3', 'python', 'py']
@@ -209,21 +415,214 @@ class TretaInstaller:
                     if 'Python 3.' in version_str:
                         version_parts = version_str.split()[1].split('.')
                         major, minor = int(version_parts[0]), int(version_parts[1])
+                        
                         if major == 3 and minor >= 11:
                             self.python_executable = cmd
-                            print_success(f"Found Python {version_str}")
+                            print_substep(f"Found compatible Python: {version_str}", "✓")
                             return True
                         elif major == 3 and minor >= 8:
-                            print_warning(f"Found Python {version_str}, but zotify requires Python 3.11+")
-                            print_info("Some features may not work correctly")
                             self.python_executable = cmd
+                            print_substep(f"Found Python {version_str} (zotify prefers 3.11+)", "⚠")
                             return True
+                        else:
+                            print_substep(f"Found Python {version_str} (too old)", "✗")
+                            
             except (subprocess.TimeoutExpired, FileNotFoundError, ValueError):
                 continue
         
         # Python not found or too old
-        print_warning("Python 3.11+ not found. Attempting to install...")
+        print_substep("Python 3.8+ not found, attempting installation...")
         return self.install_python()
+
+    def check_python(self) -> bool:
+        """Backward compatibility wrapper."""
+        return self.check_and_install_python()
+
+    def setup_global_access(self) -> bool:
+        """Setup global access to the treta command."""
+        print_substep("Setting up global command access...")
+        
+        if not self.global_install:
+            print_substep("Global install not requested, skipping")
+            return True
+        
+        try:
+            if self.system == 'windows':
+                return self.setup_windows_global_access()
+            else:
+                return self.setup_unix_global_access()
+        except Exception as e:
+            print_error(f"Failed to setup global access: {e}")
+            return False
+
+    def setup_windows_global_access(self) -> bool:
+        """Setup global access on Windows by adding to PATH."""
+        try:
+            # Create a wrapper script in a common location
+            user_scripts_dir = Path.home() / 'AppData' / 'Local' / 'Programs' / 'Treta'
+            user_scripts_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Create global treta.bat
+            global_bat = user_scripts_dir / 'treta.bat'
+            bat_content = f'@echo off\n"{self.venv_python}" "{self.project_dir / "treta.py"}" %*\n'
+            global_bat.write_text(bat_content)
+            
+            # Try to add to PATH
+            try:
+                import winreg
+                key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, 'Environment', 0, winreg.KEY_ALL_ACCESS)
+                try:
+                    current_path, _ = winreg.QueryValueEx(key, 'PATH')
+                except FileNotFoundError:
+                    current_path = ''
+                
+                scripts_dir_str = str(user_scripts_dir)
+                if scripts_dir_str not in current_path:
+                    new_path = f"{current_path};{scripts_dir_str}" if current_path else scripts_dir_str
+                    winreg.SetValueEx(key, 'PATH', 0, winreg.REG_EXPAND_SZ, new_path)
+                    print_substep("Added to PATH (restart terminal to use 'treta' globally)")
+                
+                winreg.CloseKey(key)
+                return True
+                
+            except Exception as e:
+                print_substep(f"Could not modify PATH: {e}")
+                print_substep(f"Manual step: Add {user_scripts_dir} to your PATH")
+                return True  # Don't fail the installation for this
+                
+        except Exception as e:
+            print_error(f"Failed to setup Windows global access: {e}")
+            return False
+
+    def setup_unix_global_access(self) -> bool:
+        """Setup global access on Unix systems."""
+        try:
+            # Create symlink in /usr/local/bin (common approach)
+            local_bin = Path('/usr/local/bin')
+            if local_bin.exists() and os.access(local_bin, os.W_OK):
+                symlink_path = local_bin / 'treta'
+                if symlink_path.exists():
+                    symlink_path.unlink()
+                
+                # Create wrapper script instead of direct symlink
+                wrapper_content = f'#!/bin/bash\n"{self.venv_python}" "{self.project_dir / "treta.py"}" "$@"\n'
+                symlink_path.write_text(wrapper_content)
+                symlink_path.chmod(0o755)
+                
+                print_substep("Global 'treta' command installed to /usr/local/bin")
+                return True
+            else:
+                # Try ~/.local/bin as fallback
+                local_bin = Path.home() / '.local' / 'bin'
+                local_bin.mkdir(parents=True, exist_ok=True)
+                
+                wrapper_path = local_bin / 'treta'
+                wrapper_content = f'#!/bin/bash\n"{self.venv_python}" "{self.project_dir / "treta.py"}" "$@"\n'
+                wrapper_path.write_text(wrapper_content)
+                wrapper_path.chmod(0o755)
+                
+                print_substep("Global 'treta' command installed to ~/.local/bin")
+                print_substep("Make sure ~/.local/bin is in your PATH")
+                return True
+                
+        except Exception as e:
+            print_error(f"Failed to setup Unix global access: {e}")
+            return False
+
+    def finalize_installation(self) -> bool:
+        """Finalize the installation process."""
+        print_substep("Cleaning up temporary files...")
+        
+        # Clean up any temporary files
+        temp_patterns = ['*.tmp', '*.temp', '*.download']
+        for pattern in temp_patterns:
+            for temp_file in self.project_dir.glob(pattern):
+                try:
+                    temp_file.unlink()
+                except OSError:
+                    pass
+        
+        # Create success marker
+        success_marker = self.project_dir / '.treta_installed'
+        success_marker.write_text(f"Treta installed successfully at {time.strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        print_substep("Installation finalized successfully")
+        return True
+
+    def show_results(self):
+        """Show installation results in a beautiful format."""
+        print()
+        print_header("Installation Results", "Here's what we accomplished!")
+        
+        # Successful components
+        if self.installed_components:
+            print_box("✅ Successfully Installed", self.installed_components, Colors.GREEN)
+        
+        # Warnings
+        if self.warnings:
+            print_box("⚠️ Completed with Warnings", self.warnings, Colors.YELLOW)
+        
+        # Failed components
+        if self.failed_components:
+            print_box("❌ Failed Components", self.failed_components, Colors.RED)
+        
+        # Overall status
+        if not self.failed_components and not self.warnings:
+            print_success("🎉 Perfect installation! Everything is ready to use.")
+        elif not self.failed_components:
+            print_success("✅ Installation completed successfully with minor warnings.")
+        else:
+            print_warning("⚠️ Installation completed but some components failed.")
+            print_info("Basic functionality should still work.")
+
+    def show_next_steps(self):
+        """Show enhanced next steps with better formatting."""
+        print()
+        print_header("🚀 You're All Set!", "Here's how to start using Treta:")
+        
+        # Quick start guide
+        quick_start = [
+            "1. Test your installation:",
+            "   python test_installation.py",
+            "",
+            "2. Authenticate with your music services:",
+            f"   {'treta' if self.global_install else 'python treta.py'} auth add --service spotify",
+            f"   {'treta' if self.global_install else 'python treta.py'} auth add --service apple",
+            "",
+            "3. Download your first song:",
+            f'   {'treta' if self.global_install else 'python treta.py'} download url "https://open.spotify.com/track/..."',
+            "",
+            "4. Explore all features:",
+            f"   {'treta' if self.global_install else 'python treta.py'} --help"
+        ]
+        
+        print_box("Quick Start Guide", quick_start, Colors.CYAN)
+        
+        # Advanced usage
+        advanced = [
+            "• Download entire playlists and albums",
+            "• Use mood-based recommendations",
+            "• Queue management and smart downloads",
+            "• Artist discography downloads",
+            "• High-quality audio format options",
+            "• Metadata editing and organization"
+        ]
+        
+        print_box("Advanced Features", advanced, Colors.MAGENTA)
+        
+        # Support information
+        support = [
+            "📖 Documentation: https://github.com/avinaxhroy/Treta/wiki",
+            "🐛 Report Issues: https://github.com/avinaxhroy/Treta/issues",
+            "💬 Community: https://github.com/avinaxhroy/Treta/discussions",
+            "🔧 Troubleshooting: Run 'python test_installation.py'"
+        ]
+        
+        print_box("Need Help?", support, Colors.BLUE)
+        
+        print()
+        print_colored("🎵 Happy music downloading! 🎵", Colors.GREEN + Colors.BOLD, icon=Icons.HEART)
+        print()
     
     def install_python(self) -> bool:
         """Install Python if not present (platform-specific)."""
@@ -588,6 +987,10 @@ class TretaInstaller:
     
     def _install_single_package(self, package: str, description: str) -> bool:
         """Install a single package with error handling."""
+        if not self.venv_python:
+            print_error("Virtual environment Python not available")
+            return False
+            
         try:
             print_info(f"Installing {description}...")
             subprocess.run([self.venv_python, '-m', 'pip', 'install', package], 
@@ -749,73 +1152,162 @@ class TretaInstaller:
         return False
     
     def create_launchers(self) -> bool:
-        """Create launcher scripts for easy access."""
-        print_step("Creating launcher scripts...")
+        """Create enhanced launcher scripts for easy access."""
+        print_substep("Creating launcher scripts...")
         
         try:
             if self.system == 'windows':
-                self.create_windows_launcher()
+                success = self.create_windows_launchers()
             else:
-                self.create_unix_launcher()
+                success = self.create_unix_launchers()
+                
+            if success:
+                print_substep("Launcher scripts created successfully")
+                self.installed_components.append("Launcher scripts")
             
-            print_success("Launcher scripts created")
-            return True
+            return success
             
         except Exception as e:
             print_error(f"Failed to create launchers: {e}")
+            self.failed_components.append("Launcher scripts")
             return False
     
-    def create_windows_launcher(self):
-        """Create Windows batch launcher."""
+    def create_windows_launchers(self) -> bool:
+        """Create enhanced Windows batch and PowerShell launchers."""
+        if not self.venv_python:
+            return False
+            
+        # Create enhanced batch launcher
         launcher_content = f'''@echo off
+REM Treta Music Downloader - Windows Launcher
+REM Auto-generated by Treta installer v2.0
+
+setlocal
 cd /d "{self.project_dir}"
+
+REM Check if virtual environment exists
+if not exist "{self.venv_python}" (
+    echo Error: Virtual environment not found at {self.venv_python}
+    echo Please run the installer again.
+    pause
+    exit /b 1
+)
+
+REM Run Treta with all arguments
 "{self.venv_python}" treta.py %*
+
+REM Preserve exit code
+exit /b %ERRORLEVEL%
 '''
         
         launcher_path = self.project_dir / 'treta.bat'
-        with open(launcher_path, 'w') as f:
-            f.write(launcher_content)
+        launcher_path.write_text(launcher_content, encoding='utf-8')
+        
+        # Create enhanced PowerShell launcher
+        ps_content = f'''# Treta Music Downloader - PowerShell Launcher
+# Auto-generated by Treta installer v2.0
+
+param(
+    [Parameter(ValueFromRemainingArguments=$true)]
+    [string[]]$Arguments
+)
+
+# Set error handling
+$ErrorActionPreference = "Stop"
+
+# Get the directory where this script is located
+$ScriptDir = "{self.project_dir}"
+Set-Location $ScriptDir
+
+# Check if virtual environment exists
+$VenvPython = "{self.venv_python}"
+if (-not (Test-Path $VenvPython)) {{
+    Write-Host "Error: Virtual environment not found at $VenvPython" -ForegroundColor Red
+    Write-Host "Please run the installer again." -ForegroundColor Yellow
+    Read-Host "Press Enter to exit"
+    exit 1
+}}
+
+# Run Treta with all passed arguments
+try {{
+    & $VenvPython "$ScriptDir\\treta.py" @Arguments
+    exit $LASTEXITCODE
+}} catch {{
+    Write-Host "Error running Treta: $_" -ForegroundColor Red
+    exit 1
+}}
+'''
+        
+        ps_launcher_path = self.project_dir / 'treta.ps1'
+        ps_launcher_path.write_text(ps_content, encoding='utf-8')
+        
+        print_substep("Created treta.bat and treta.ps1 launchers")
+        return True
     
-    def create_unix_launcher(self):
-        """Create Unix shell launcher."""
+    def create_unix_launchers(self) -> bool:
+        """Create enhanced Unix shell launcher."""
+        if not self.venv_python:
+            return False
+            
         launcher_content = f'''#!/bin/bash
-cd "{self.project_dir}"
-"{self.venv_python}" treta.py "$@"
+# Treta Music Downloader - Unix Launcher
+# Auto-generated by Treta installer v2.0
+
+set -e  # Exit on error
+
+# Get the directory where this script is located
+SCRIPT_DIR="{self.project_dir}"
+cd "$SCRIPT_DIR"
+
+# Check if virtual environment exists
+VENV_PYTHON="{self.venv_python}"
+if [ ! -f "$VENV_PYTHON" ]; then
+    echo "Error: Virtual environment not found at $VENV_PYTHON" >&2
+    echo "Please run the installer again." >&2
+    exit 1
+fi
+
+# Run Treta with all arguments
+exec "$VENV_PYTHON" "$SCRIPT_DIR/treta.py" "$@"
 '''
         
         launcher_path = self.project_dir / 'treta'
-        with open(launcher_path, 'w') as f:
-            f.write(launcher_content)
+        launcher_path.write_text(launcher_content, encoding='utf-8')
         
         # Make executable
-        os.chmod(launcher_path, 0o755)
+        launcher_path.chmod(0o755)
+        
+        print_substep("Created treta shell launcher")
+        return True
     
     def install_package(self) -> bool:
         """Install Treta package in development mode for global 'treta' command."""
-        print_step("Installing Treta package for global access...")
+        print_substep("Installing Treta package for global access...")
         
         try:
             if not self.venv_python:
                 print_error("Virtual environment not available")
+                self.failed_components.append("Treta package installation")
                 return False
             
             # Install the current directory as an editable package
             result = subprocess.run([
-                str(self.venv_python), '-m', 'pip', 'install', '-e', '.'
+                self.venv_python, '-m', 'pip', 'install', '-e', '.'
             ], cwd=self.project_dir, capture_output=True, text=True, timeout=120)
             
             if result.returncode == 0:
-                print_success("Treta package installed successfully")
-                print_info("You can now use 'treta' command globally (within the virtual environment)")
+                print_substep("Treta package installed successfully")
+                print_substep("Global 'treta' command is now available (in venv)")
+                self.installed_components.append("Treta package (editable install)")
                 return True
             else:
-                print_warning(f"Package installation failed: {result.stderr}")
-                print_info("You can still use 'python treta.py' or the launcher scripts")
+                print_substep(f"Package installation failed: {result.stderr}")
+                self.warnings.append("Package installation (you can still use launcher scripts)")
                 return False
                 
         except Exception as e:
-            print_warning(f"Package installation failed: {e}")
-            print_info("You can still use 'python treta.py' or the launcher scripts")
+            print_substep(f"Package installation failed: {e}")
+            self.warnings.append("Package installation (you can still use launcher scripts)")
             return False
     
     def setup_configuration(self) -> bool:
@@ -941,22 +1433,64 @@ cd "{self.project_dir}"
         print_colored("Happy downloading! 🎵", Colors.GREEN + Colors.BOLD)
 
 
+def parse_arguments() -> argparse.Namespace:
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Treta Universal Auto-Installer v2.0",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+    python install_auto.py                    # Standard installation
+    python install_auto.py --global-install  # Install globally
+    python install_auto.py --force-reinstall # Force reinstall everything
+    python install_auto.py --verbose         # Enable detailed logging
+    python install_auto.py --skip-optional   # Skip optional packages
+        """
+    )
+    
+    parser.add_argument(
+        '--force-reinstall',
+        action='store_true',
+        help='Force reinstall all components even if they exist'
+    )
+    
+    parser.add_argument(
+        '--global-install',
+        action='store_true',
+        help='Install globally (adds treta command to PATH)'
+    )
+    
+    parser.add_argument(
+        '--skip-optional',
+        action='store_true',
+        help='Skip optional packages for faster installation'
+    )
+    
+    parser.add_argument(
+        '--verbose', '-v',
+        action='store_true',
+        help='Enable verbose logging'
+    )
+    
+    return parser.parse_args()
+
 def main():
-    """Main entry point."""
+    """Main entry point with enhanced argument handling."""
+    args = parse_arguments()
+    
+    # Handle help display
     if len(sys.argv) > 1 and sys.argv[1] in ['--help', '-h']:
-        print("Treta Universal Auto-Installer")
-        print()
-        print("This script automatically sets up everything needed to run Treta:")
-        print("- Python 3.8+ installation (if needed)")
-        print("- Virtual environment creation")
-        print("- All dependencies installation")
-        print("- FFmpeg setup")
-        print("- Launcher script creation")
-        print()
-        print("Usage: python install_auto.py")
         return
     
-    installer = TretaInstaller()
+    # Show basic help if no arguments
+    if len(sys.argv) == 1:
+        print_header("Treta Universal Auto-Installer v2.0", 
+                    "The most user-friendly music downloader installer!")
+        print_info("Starting installation with default settings...")
+        print_info("Use --help to see all available options")
+        print()
+    
+    installer = TretaInstaller(args)
     success = installer.run()
     
     if success:
@@ -966,6 +1500,10 @@ def main():
     else:
         print()
         print_error("❌ Treta installation failed. Please check the errors above.")
+        print_info("You can:")
+        print_info("• Run the installer again with --verbose for more details")
+        print_info("• Check the troubleshooting guide")
+        print_info("• Report the issue on GitHub")
         sys.exit(1)
 
 

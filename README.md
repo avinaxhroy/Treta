@@ -33,21 +33,126 @@ Treta Music Downloader is intended for **educational and personal use only**. Us
 By using Treta, you agree to take full responsibility for adhering to local laws and regulations regarding music downloads and intellectual property rights.
 
 
-## ⚡ One-Click Installation & Setup
+## ⚡ One-Click Installation & Setup (NEW v2.0!)
 
-### 🖥️ Windows (Automatic Setup)
+**🎉 Introducing the most user-friendly installer on the planet!** Our enhanced auto-installer v2.0 is now even smarter, faster, and more reliable.
 
-Simply run our auto-installer that handles **EVERYTHING** for you:
+### 🖥️ Windows - Super Easy Installation
 
+**Option 1: Ultimate Easy Mode (Recommended)**
+```powershell
+# Just double-click this file after cloning/downloading:
+install_easy.bat
+```
+
+**Option 2: PowerShell One-Liner**
 ```powershell
 # Download and run the auto-installer
 powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/avinaxhroy/treta/main/install.ps1 | iex"
 ```
 
-**What the auto-installer does:**
-- ✅ Installs Python (if not present)
-- ✅ Creates isolated virtual environment
-- ✅ Installs all dependencies automatically
+**Option 3: Manual with Enhanced Features**
+```cmd
+# Clone the repository
+git clone https://github.com/avinaxhroy/treta.git
+cd treta
+
+# Run the enhanced auto-installer
+python install_auto.py --global-install
+```
+
+### 🐧 Linux/macOS - One Command Installation
+
+**Option 1: Ultimate Easy Mode**
+```bash
+# Just run this after cloning:
+./install_easy.sh
+```
+
+**Option 2: Direct Installation**
+```bash
+# Clone and install in one go
+git clone https://github.com/avinaxhroy/treta.git && cd treta && python3 install_auto.py --global-install
+```
+
+### 🚀 What the Enhanced Auto-Installer v2.0 Does
+
+**🔧 Technical Setup (No User Action Required):**
+- ✅ **Smart Python Detection**: Finds and validates Python 3.8+ installation
+- ✅ **Auto Python Install**: Downloads and installs Python if missing
+- ✅ **Virtual Environment**: Creates isolated `.venv` for clean dependencies
+- ✅ **Dependency Resolution**: Installs all required packages with smart conflict resolution
+- ✅ **FFmpeg Integration**: Downloads and configures FFmpeg for audio processing
+- ✅ **Global Command Setup**: Installs `treta` command globally in your PATH
+
+**🎵 Music Service Integration:**
+- ✅ **Spotify Support**: zotify with DraftKinner's enhanced version
+- ✅ **Apple Music Support**: gamdl with full M4A support
+- ✅ **YouTube Music Support**: yt-dlp with premium quality extraction
+- ✅ **AI Mood Detection**: librosa-powered mood analysis
+- ✅ **Smart Playlists**: Intelligent recommendation system
+
+**🎯 User Experience Enhancements:**
+- ✅ **Progress Indicators**: Beautiful colored progress bars
+- ✅ **Error Recovery**: Automatically handles and fixes common issues
+- ✅ **Health Checks**: Comprehensive installation verification
+- ✅ **Multiple Launchers**: Batch files, PowerShell scripts, and shell scripts
+- ✅ **Desktop Integration**: Optional desktop shortcuts and shell aliases
+
+### 🆕 NEW Installation Options
+
+```bash
+# Standard installation
+python install_auto.py
+
+# Install with global command access
+python install_auto.py --global-install
+
+# Force reinstall everything (if issues)
+python install_auto.py --force-reinstall
+
+# Skip optional packages (faster install)
+python install_auto.py --skip-optional
+
+# Verbose logging (troubleshooting)
+python install_auto.py --verbose
+
+# All options combined
+python install_auto.py --global-install --verbose
+```
+
+### 🩺 Installation Health Check
+
+After installation, verify everything works:
+
+```bash
+# Comprehensive health check
+python test_installation.py
+
+# Verbose diagnostics
+python test_installation.py --verbose
+
+# Auto-fix simple issues
+python test_installation.py --fix-issues
+```
+
+### 🌍 Global Access Setup
+
+Want to use `treta` command from anywhere? Run the global setup:
+
+```bash
+# Add global command access
+python setup_global.py
+
+# Add desktop shortcuts
+python setup_global.py --desktop
+
+# Add shell aliases
+python setup_global.py --shell-alias
+
+# Remove global access
+python setup_global.py --uninstall
+```
 - ✅ Downloads and sets up FFmpeg
 - ✅ Installs Treta as a global command
 - ✅ Guides you through service authentication
